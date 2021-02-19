@@ -8,14 +8,14 @@ import get from "lodash/get";
 import isEqual from "lodash/isEqual";
 import { prepareFormData } from "egov-ui-kit/redux/common/actions";
 import { getTenantId } from "egov-ui-kit/utils/localStorageUtils";
-import OSMCCBookingDetails from "../AllApplications/components/OSMCCBookingDetails"
-import AppDetails from "../AllApplications/components/ApplicantDetails"
-import OSBMBookingDetails from "../AllApplications/components/OSBMBookingDetails"
-import DocumentPreview from "../AllApplications/components/DocumentPreview"
+// import OSMCCBookingDetails from "../AllApplications/components/OSMCCBookingDetails"
+// import AppDetails from "../AllApplications/components/ApplicantDetails"
+// import OSBMBookingDetails from "../AllApplications/components/OSBMBookingDetails"
+// import DocumentPreview from "../AllApplications/components/DocumentPreview"
 import { prepareFinalObject } from "egov-ui-framework/ui-redux/screen-configuration/actions";
-import PaymentDetails from "../AllApplications/components/PaymentDetails"
-import ApproveBooking from "../ApplicationResolved";
-import RejectBooking from "../RejectComplaint";
+// import PaymentDetails from "../AllApplications/components/PaymentDetails"
+// import ApproveBooking from "../ApplicationResolved";
+// import RejectBooking from "../RejectComplaint";
 import axios from "axios";
 import jp, { value } from "jsonpath";
 import { httpRequest } from "egov-ui-kit/utils/api";
@@ -38,10 +38,10 @@ import {
 	sendMessageMedia
 } from "egov-ui-kit/redux/bookings/actions";
 import { connect } from "react-redux";
-import DialogContainer from '../../modules/DialogContainer';
-import Footer from "../../modules/footer"
-import ActionButtonDropdown from '../../modules/ActionButtonDropdown'
-import { convertEpochToDate, getDurationDate,getFileUrlFromAPI } from '../../modules/commonFunction'
+// import DialogContainer from '../../modules/DialogContainer';
+// import Footer from "../../modules/footer"
+// import ActionButtonDropdown from '../../modules/ActionButtonDropdown'
+// import { convertEpochToDate, getDurationDate,getFileUrlFromAPI } from '../../modules/commonFunction'
 import "./index.css";
 import { withStyles } from '@material-ui/core/styles';
 import Dialog from '@material-ui/core/Dialog';
@@ -96,7 +96,9 @@ class ApplicationDetails extends Component {
 			actionOnApplication: '',
 			actionTittle: '',
 			actionOpen: false,
-			BankName: ''
+			BankName: '',
+			RoomDocument: '',
+			commRoomData: ''
 		};
 	};
 
@@ -112,82 +114,51 @@ class ApplicationDetails extends Component {
 		})
 	};
 
-
+ 
 	componentDidMount = async () => {
-		let {
-			fetchApplications,
-			fetchHistory,
-			fetchPayment,
-			fetchDataAfterPayment, downloadPaymentReceipt,
-			match,
-			resetFiles,
-			transformedComplaint,
-			prepareFormData,
-			userInfo,
-			documentMap,
-			prepareFinalObject
-		} = this.props;
 
-	
+		let fetchUrl = window.location.pathname;
+        console.log(fetchUrl)
+         
+        let fetchApplicationNumber = fetchUrl.substring(fetchUrl.lastIndexOf('/') + 1)
+        console.log("fetchApplicationNumber--",fetchApplicationNumber)
 
-		prepareFormData("complaints", transformedComplaint);
-
-		const { complaint } = transformedComplaint;
-		fetchApplications(
-			{
-				"applicationNumber": match.params.applicationId, 'uuid': userInfo.uuid,
-				"applicationStatus": "",
-				"mobileNumber": "", "bookingType": "",
-        		"tenantId":userInfo.tenantId
-			}
-		);
-		fetchHistory([
-			{ key: "businessIds", value: match.params.applicationId }, { key: "history", value: true }, { key: "tenantId", value: userInfo.tenantId }])
+   let createAppData = {
+    "applicationNumber": fetchApplicationNumber,
+	"applicationStatus": "",
+	"typeOfRoom": "",
+	"fromDate": "",
+	"toDate": ""
+    }
 		
-		fetchPayment(
-			[{ key: "consumerCode", value: match.params.applicationId }, { key: "businessService", value: "BOOKING_BRANCH_SERVICES.MANUAL_OPEN_SPACE" }, { key: "tenantId", value: userInfo.tenantId  }
-			])
-		fetchDataAfterPayment(
-			[{ key: "consumerCodes", value: match.params.applicationId }, { key: "tenantId", value: userInfo.tenantId }
-			])
+	let payloadfund = await httpRequest(
+			"bookings/api/employee/community/center/room/_search",
+			"_search",[],
+			createAppData
+			);
 
-			let  RequestGateWay = [
-				{ key: "consumerCode", value: match.params.applicationId },
-				{ key: "tenantId", value: userInfo.tenantId }
-				];
-			  let payloadGateWay = await httpRequest(
-				"pg-service/transaction/v1/_search",
-				"_search",
-				RequestGateWay
-				);
-			 console.log("payloadGateWay--",payloadGateWay)   //Transaction[0].gateway
-			 
-			 if(payloadGateWay.Transaction.length > 0){
-	console.log("consoleDataForGateWay--",payloadGateWay.Transaction.length > 0 ? payloadGateWay.Transaction : "abababa") 
-		
-	let gateWay = payloadGateWay.Transaction[0].gateway; 
-	
-	console.log("gateWay--",gateWay ? gateWay : "NotFound")
-	
-	prepareFinalObject('GateWayName', gateWay)
-	
+	console.log("payloadfund--",payloadfund)		
+	this.props.prepareFinalObject("DataOfRoomAndCommunity",payloadfund)
+	let documentForBothBooking = payloadfund.communityCenterDocumentMap
+	console.log("documentForBothBooking-",documentForBothBooking)
+	let RoomCommData = payloadfund.communityCenterRoomBookingMap
+    console.log("RoomCommData--",RoomCommData)
+	let AllKeysOfRoom = []
+	let AllValues
+	for (const [key] of Object.entries(RoomCommData)) {
+		console.log("allKeys--",`${key}`);
+		AllKeysOfRoom.push(`${key}`)
+	  }
+    console.log("AllKeysOfRoom--",AllKeysOfRoom)
+	console.log("RoomApplicationNumber--",AllKeysOfRoom[0].roomApplicationNumber,AllKeysOfRoom[0].typeOfRoom)
+	//["RoomsModel(id=8fa9e31d-f71a-4aff-8e55-a2879e124b4e, roomApplicationNumber=CH-BK-ROOM-2021-02-16-004311, typeOfRoom=AC, totalNoOfRooms=25, communityApplicationNumber=CH-BK-2021-02-16-004309, roomApplicationStatus=OFFLINE_APPLIED, roomBusinessService=BKROOM, remarks=string, action=OFFLINE_APPLY, lastModifiedDate=2021-02-16, createdDate=2021-02-16, fromDate=2021-04-22, toDate=2021-04-22, discount=null, facilationCharge=null, roomPaymentStatus=null)"]
+	AllValues = Object.values(RoomCommData)
+	console.log("AllValues--",AllValues);
+	this.props.prepareFinalObject("DataOfRoomAndCommunity.MainData",AllValues[0])
 	this.setState({
-	   BankName: gateWay
+		RoomDocument:documentForBothBooking,
+		commRoomData:AllValues[0]
 	})
-	
-	}
-
-	
-		//  downloadPaymentReceipt({ BookingInfo: BookingInfo })
-		let { details } = this.state;
-	}
-
-	componentWillReceiveProps = async (nextProps) => {
-	
-		const { transformedComplaint, prepareFormData } = this.props;
-		if (!isEqual(transformedComplaint, nextProps.transformedComplaint)) {
-			prepareFormData("complaints", nextProps.transformedComplaint);
-		}
 	}
 
 	actionButtonOnClick = (e, complaintNo, label) => {
@@ -329,7 +300,7 @@ class ApplicationDetails extends Component {
 				"bookingPeriod": getDurationDate(
 					complaint.bkFromDate,
 					complaint.bkToDate
-				), 
+				),
 				"bookingItem": "Online Payment Against Booking of Open Space for Building Material",
 				"amount": paymentDetailsForReceipt.Payments[0].paymentDetails[0].bill.billDetails[0].billAccountDetails.filter(
 					(el) => !el.taxHeadCode.includes("PARKING_LOTS_MANUAL_OPEN_SPACE_BOOKING_BRANCH")
@@ -871,483 +842,236 @@ downloadPermissionLetterFunction = async (e) => {
 	}
 
 	render() {
-		const dropbordernone = {
-			float: "right",
-			paddingRight: "20px"
-
-		};
-		let { shareCallback } = this;
-		let { comments, openMap } = this.state;
-		let { complaint, timeLine } = this.props.transformedComplaint;
-		let { documentMap,xyz,ab } = this.props;
-		let { historyApiData, paymentDetails, match, userInfo } = this.props;
-	
-
-		let {
-			role,
-			serviceRequestId,
-			history,
-			isAssignedToEmployee,
-			reopenValidChecker
-		} = this.props;
-		let btnOneLabel = "";
-		let btnTwoLabel = "";
-		let action;
-		let complaintLoc = {};
+		console.log("state--inrender",this.state)
 		
-		if (complaint) {
-			if (role === "ao") {
-				if (complaint.complaintStatus.toLowerCase() === "unassigned") {
-					btnOneLabel = "ES_REJECT_BUTTON";
-					btnTwoLabel = "ES_COMMON_ASSIGN";
-				} else if (complaint.complaintStatus.toLowerCase() === "reassign") {
-					btnOneLabel = "ES_REJECT_BUTTON";
-					btnTwoLabel = "ES_COMMON_REASSIGN";
-				} else if (complaint.complaintStatus.toLowerCase() === "assigned") {
-					btnTwoLabel = "ES_COMMON_REASSIGN";
-				}
-				else if (complaint.complaintStatus.toLowerCase() === "escalated") {
-					btnOneLabel = "ES_REJECT_BUTTON";
-					btnTwoLabel = "ES_RESOLVE_MARK_RESOLVED";
-				}
-			} 
-			else if (role === "employee") {
-		
-				
-				btnOneLabel = "BK_MYBK_REJECT_BUTTON";
-				btnTwoLabel = "BK_MYBK_RESOLVE_MARK_RESOLVED";
-				
-			}
-		}
-		if (timeLine && timeLine[0]) {
-			action = timeLine[0].action;
-		}
 		return (
 			<div>
-				<Screen>
-					{complaint && !openMap && (
-						<div>
-							<div className="form-without-button-cont-generic">
-								<div className="container" >
-									<div className="row">
-										<div className="col-12 col-md-6" style={{ fontSize: 'x-large' }}>
+				<h1>hello</h1>
+			</div>
+			// <div>
+			// 	<Screen>
+			// 			<div>
+			// 				<div className="form-without-button-cont-generic">
+			// 					<div className="container" >
+			// 						<div className="row">
+			// 							<div className="col-12 col-md-6" style={{ fontSize: 'x-large' }}>
 
-											Application Details
-										</div>
-										<div className="col-12 col-md-6 row">
-											<div class="col-12 col-md-6 col-sm-3" >
-												<ActionButtonDropdown data={{
-													label: { labelName: "Download ", labelKey: "BK_COMMON_DOWNLOAD_ACTION" },
-													rightIcon: "arrow_drop_down",
-													leftIcon: "cloud_download",
-													props: {
-														variant: "outlined",
-														style: { marginLeft: 5, marginRight: 15, color: "#FE7A51", height: "60px" }, className: "tl-download-button"
-													},
-													menu: (complaint.status=='APPROVED')?[{
-														label: {
-															labelName: "Receipt",
-															labelKey: "BK_MYBK_DOWNLOAD_RECEIPT"
-														},
+			// 								Application Details
+			// 							</div>
+			// 							{/* <div className="col-12 col-md-6 row">
+			// 								<div class="col-12 col-md-6 col-sm-3" >
+			// 									<ActionButtonDropdown data={{
+			// 										label: { labelName: "Download ", labelKey: "BK_COMMON_DOWNLOAD_ACTION" },
+			// 										rightIcon: "arrow_drop_down",
+			// 										leftIcon: "cloud_download",
+			// 										props: {
+			// 											variant: "outlined",
+			// 											style: { marginLeft: 5, marginRight: 15, color: "#FE7A51", height: "60px" }, className: "tl-download-button"
+			// 										},
+			// 										menu: (complaint.status=='APPROVED')?[{
+			// 											label: {
+			// 												labelName: "Receipt",
+			// 												labelKey: "BK_MYBK_DOWNLOAD_RECEIPT"
+			// 											},
 
-														link: () => this.downloadPaymentReceiptButton('Receipt'),
-														leftIcon: "receipt"
-													},
-													{
-														label: {
-															labelName: "PermissionLetter",
-															labelKey: "BK_MYBK_DOWNLOAD_PERMISSION_LETTER"
-														},
-														link: () => this.downloadPermissionLetterButton('PermissionLetter'),
-														leftIcon: "book"
-													},{
-														label: {
-															labelName: "Application",
-															labelKey: "BK_MYBK_PRINT_APPLICATION"
-														},
-														link: () => this.downloadApplicationButton('state', "dispatch", 'REJECT'),
-														leftIcon: "assignment"
-													}]:
-													[{
-														label: {
-															labelName: "Application",
-															labelKey: "BK_MYBK_DOWNLOAD_APPLICATION"
-														},
-														link: () => this.downloadApplicationButton('Application'),
-														leftIcon: "assignment"
-													}]
-												}} />
-											</div>
-											<div class="col-12 col-md-6 col-sm-3" >
-												<ActionButtonDropdown data={{
-													label: { labelName: "Print", labelKey: "BK_COMMON_PRINT_ACTION" },
-													rightIcon: "arrow_drop_down",
-													leftIcon: "print",
-													props: {
-														variant: "outlined",
-														style: { marginLeft: 5, marginRight: 15, color: "#FE7A51", height: "60px" }, className: "tl-download-button"
-													},
-													menu:  (complaint.status=='APPROVED')?[{
-														label: {
-															labelName: "Receipt",
-															labelKey: "BK_MYBK_PRINT_RECEIPT"
-														},
+			// 											link: () => this.downloadPaymentReceiptButton('Receipt'),
+			// 											leftIcon: "receipt"
+			// 										},
+			// 										{
+			// 											label: {
+			// 												labelName: "PermissionLetter",
+			// 												labelKey: "BK_MYBK_DOWNLOAD_PERMISSION_LETTER"
+			// 											},
+			// 											link: () => this.downloadPermissionLetterButton('PermissionLetter'),
+			// 											leftIcon: "book"
+			// 										},{
+			// 											label: {
+			// 												labelName: "Application",
+			// 												labelKey: "BK_MYBK_PRINT_APPLICATION"
+			// 											},
+			// 											link: () => this.downloadApplicationButton('state', "dispatch", 'REJECT'),
+			// 											leftIcon: "assignment"
+			// 										}]:
+			// 										[{
+			// 											label: {
+			// 												labelName: "Application",
+			// 												labelKey: "BK_MYBK_DOWNLOAD_APPLICATION"
+			// 											},
+			// 											link: () => this.downloadApplicationButton('Application'),
+			// 											leftIcon: "assignment"
+			// 										}]
+			// 									}} />
+			// 								</div>
+			// 								<div class="col-12 col-md-6 col-sm-3" >
+			// 									<ActionButtonDropdown data={{
+			// 										label: { labelName: "Print", labelKey: "BK_COMMON_PRINT_ACTION" },
+			// 										rightIcon: "arrow_drop_down",
+			// 										leftIcon: "print",
+			// 										props: {
+			// 											variant: "outlined",
+			// 											style: { marginLeft: 5, marginRight: 15, color: "#FE7A51", height: "60px" }, className: "tl-download-button"
+			// 										},
+			// 										menu:  (complaint.status=='APPROVED')?[{
+			// 											label: {
+			// 												labelName: "Receipt",
+			// 												labelKey: "BK_MYBK_PRINT_RECEIPT"
+			// 											},
 
-														link: () => this.downloadPaymentReceiptButton('print'),
-														leftIcon: "receipt"
-													},
-													{
-														label: {
-															labelName: "PermissionLetter",
-															labelKey: "BK_MYBK_DOWNLOAD_PERMISSION_LETTER"
-														},
-														 link: () => this.downloadPermissionLetterButton('print'),
-														 leftIcon: "book"
-													},{
-														label: {
-															labelName: "Application",
-															labelKey: "BK_MYBK_PRINT_APPLICATION"
-														},
-														link: () => this.downloadApplicationButton('print'),
-														leftIcon: "assignment"
-													}]:[{
-														label: {
-															labelName: "Application",
-															labelKey: "BK_MYBK_PRINT_APPLICATION"
-														},
-														link: () => this.downloadApplicationButton('print'),
-														leftIcon: "assignment"
-													}]
-												}} />
+			// 											link: () => this.downloadPaymentReceiptButton('print'),
+			// 											leftIcon: "receipt"
+			// 										},
+			// 										{
+			// 											label: {
+			// 												labelName: "PermissionLetter",
+			// 												labelKey: "BK_MYBK_DOWNLOAD_PERMISSION_LETTER"
+			// 											},
+			// 											 link: () => this.downloadPermissionLetterButton('print'),
+			// 											 leftIcon: "book"
+			// 										},{
+			// 											label: {
+			// 												labelName: "Application",
+			// 												labelKey: "BK_MYBK_PRINT_APPLICATION"
+			// 											},
+			// 											link: () => this.downloadApplicationButton('print'),
+			// 											leftIcon: "assignment"
+			// 										}]:[{
+			// 											label: {
+			// 												labelName: "Application",
+			// 												labelKey: "BK_MYBK_PRINT_APPLICATION"
+			// 											},
+			// 											link: () => this.downloadApplicationButton('print'),
+			// 											leftIcon: "assignment"
+			// 										}]
+			// 									}} />
 
-											</div>
-										</div>
-									</div>
-								</div>
+			// 								</div>
+			// 							</div> */}
+			// 						</div>
+			// 					</div>
 
-								<OSMCCBookingDetails
-									{...complaint}
-									historyApiData={historyApiData && historyApiData}
-								/>
+			// 					{/* <OSMCCBookingDetails
+			// 						{...complaint}
+			// 						historyApiData={historyApiData && historyApiData}
+			// 					/>
 
-                                <AppDetails
-									{...complaint}
+            //                     <AppDetails
+			// 						{...complaint}
 
-								/>
+			// 					/>
 
-								<OSBMBookingDetails
-									{...complaint}
-									historyApiData={historyApiData && historyApiData}
-								/>
+			// 					<OSBMBookingDetails
+			// 						{...complaint}
+			// 						historyApiData={historyApiData && historyApiData}
+			// 					/>
 								
 
-								<PaymentDetails
-									paymentDetails={paymentDetails && paymentDetails}
-								/>
-								
-								<div style={{
-									height: "100px",
-									width: "100",
-									backgroundColor: "white",
-									border: "2px solid white",
-									boxShadow: "0 0 2px 2px #e7dcdc", paddingLeft: "30px", paddingTop: "10px"
-								}}><b>Documents</b><br></br>
+			// 					<PaymentDetails
+			// 						paymentDetails={paymentDetails && paymentDetails}
+			// 					/>
+			// 					 */}
+			// 					<div style={{
+			// 						height: "100px",
+			// 						width: "100",
+			// 						backgroundColor: "white",
+			// 						border: "2px solid white",
+			// 						boxShadow: "0 0 2px 2px #e7dcdc", paddingLeft: "30px", paddingTop: "10px"
+			// 					}}><b>Documents</b><br></br>
 
-									{/* {documentMap && Object.values(documentMap) ? Object.values(documentMap) : "Not found"} */}
-									{xyz && xyz ? xyz[1] : "Not Found"}
-									<button className="ViewDetailButton" data-doc={documentMap} onClick={(e) => { this.callApiForDocumentData(e) }}>VIEW</button>
-								</div>
+			// 						{/* {documentMap && Object.values(documentMap) ? Object.values(documentMap) : "Not found"} */}
+			// 						{xyz && xyz ? xyz[1] : "Not Found"}
+			// 						<button className="ViewDetailButton" data-doc={documentMap} onClick={(e) => { this.callApiForDocumentData(e) }}>VIEW</button>
+			// 					</div>
 
-								<div style={{
-									height: "100px",
-									width: "100",
-									backgroundColor: "white",
-									border: "2px solid white",
-									boxShadow: "0 0 2px 2px #e7dcdc", paddingLeft: "30px", paddingTop: "10px"
-								}}><b>Other Documents</b><br></br>
+			// 					<div style={{
+			// 						height: "100px",
+			// 						width: "100",
+			// 						backgroundColor: "white",
+			// 						border: "2px solid white",
+			// 						boxShadow: "0 0 2px 2px #e7dcdc", paddingLeft: "30px", paddingTop: "10px"
+			// 					}}><b>Other Documents</b><br></br>
 
-									{/* {documentMap && Object.values(documentMap) ? Object.values(documentMap) : "Not found"} */}
-									{ab && ab ? ab[1] : "Not Found"}
-									<button className="ViewDetailButton" data-doc={documentMap} onClick={(e) => { this.DownloadOtherDocumentData(e) }}>VIEW</button>
-								</div>
+			// 						{/* {documentMap && Object.values(documentMap) ? Object.values(documentMap) : "Not found"} */}
+			// 						{ab && ab ? ab[1] : "Not Found"}
+			// 						<button className="ViewDetailButton" data-doc={documentMap} onClick={(e) => { this.DownloadOtherDocumentData(e) }}>VIEW</button>
+			// 					</div>
 
-								<Comments
-									comments={comments}
-									role={role}
-									isAssignedToEmployee={isAssignedToEmployee}
-								/>
-							</div>
-							<div style={{
-								paddingTop: "30px",
-								paddingRight: "30px", float: "right",
-							}}>
-								{(role === "ao" &&
-									complaint.complaintStatus.toLowerCase() !== "closed") ||
-									(role === "eo" &&
-										(complaint.status.toLowerCase() === "escalatedlevel1pending" ||
-											complaint.status.toLowerCase() === "escalatedlevel2pending" ||
-											complaint.status.toLowerCase() === "assigned")) ||
-									(role === "employee" &&
-										(
-											(complaint.status == "PENDINGAPPROVAL" &&
+			// 					<Comments
+			// 						comments={comments}
+			// 						role={role}
+			// 						isAssignedToEmployee={isAssignedToEmployee}
+			// 					/>
+			// 				</div>
+			// 				<div style={{
+			// 					paddingTop: "30px",
+			// 					paddingRight: "30px", float: "right",
+			// 				}}>
+			// 					{(role === "ao" &&
+			// 						complaint.complaintStatus.toLowerCase() !== "closed") ||
+			// 						(role === "eo" &&
+			// 							(complaint.status.toLowerCase() === "escalatedlevel1pending" ||
+			// 								complaint.status.toLowerCase() === "escalatedlevel2pending" ||
+			// 								complaint.status.toLowerCase() === "assigned")) ||
+			// 						(role === "employee" &&
+			// 							(
+			// 								(complaint.status == "PENDINGAPPROVAL" &&
 												
 
-												<Footer className="apply-wizard-footer" style={{ display: 'flex', justifyContent: 'flex-end' }} children={<ActionButtonDropdown data={{
-													label: { labelName: "TAKE ACTION ", labelKey: "BK_COMMON_TAKE_ACTION" },
-													rightIcon: "arrow_drop_down",
-													props: {
-														variant: "outlined",
-														style: { marginLeft: 5, marginRight: 15, backgroundColor: "#FE7A51", color: "#fff", border: "none", height: "48px", width: "250px" }
-													},
-													menu: [{
-														label: {
-															labelName: "Approve",
-															labelKey: "BK_MYBK_APPROVE_ACTION_BUTTON"
-														},
+			// 									<Footer className="apply-wizard-footer" style={{ display: 'flex', justifyContent: 'flex-end' }} children={<ActionButtonDropdown data={{
+			// 										label: { labelName: "TAKE ACTION ", labelKey: "BK_COMMON_TAKE_ACTION" },
+			// 										rightIcon: "arrow_drop_down",
+			// 										props: {
+			// 											variant: "outlined",
+			// 											style: { marginLeft: 5, marginRight: 15, backgroundColor: "#FE7A51", color: "#fff", border: "none", height: "48px", width: "250px" }
+			// 										},
+			// 										menu: [{
+			// 											label: {
+			// 												labelName: "Approve",
+			// 												labelKey: "BK_MYBK_APPROVE_ACTION_BUTTON"
+			// 											},
 
-														link: () => this.actionButtonOnClick('state', "dispatch", 'APPROVED')
-													},
-													{
-														label: {
-															labelName: "Reject",
-															labelKey: "BK_MYBK_REJECT_ACTION_BUTTON"
-														},
-														link: () => this.actionButtonOnClick('state', "dispatch", 'REJECT')
-													}]
-												}} />}></Footer>
-											)
+			// 											link: () => this.actionButtonOnClick('state', "dispatch", 'APPROVED')
+			// 										},
+			// 										{
+			// 											label: {
+			// 												labelName: "Reject",
+			// 												labelKey: "BK_MYBK_REJECT_ACTION_BUTTON"
+			// 											},
+			// 											link: () => this.actionButtonOnClick('state', "dispatch", 'REJECT')
+			// 										}]
+			// 									}} />}></Footer>
+			// 								)
 
-										)
-									)}
+			// 							)
+			// 						)}
 
-								<DialogContainer
-									toggle={this.state.togglepopup}
-									actionTittle={this.state.actionTittle}
-									togglepopup={this.actionButtonOnClick}									
-									maxWidth={'md'}
-									children={this.state.actionOnApplication == 'APPROVED' ? <ApproveBooking
-										applicationNumber={match.params.applicationId}
-										userInfo={userInfo}
-									/> : <RejectBooking
-											applicationNumber={match.params.applicationId}
-											userInfo={userInfo}
-										/>}
-								/>
+			// 					<DialogContainer
+			// 						toggle={this.state.togglepopup}
+			// 						actionTittle={this.state.actionTittle}
+			// 						togglepopup={this.actionButtonOnClick}									
+			// 						maxWidth={'md'}
+			// 						children={this.state.actionOnApplication == 'APPROVED' ? <ApproveBooking
+			// 							applicationNumber={match.params.applicationId}
+			// 							userInfo={userInfo}
+			// 						/> : <RejectBooking
+			// 								applicationNumber={match.params.applicationId}
+			// 								userInfo={userInfo}
+			// 							/>}
+			// 					/>
 
-							</div>
-						</div>
-					)}
-				</Screen>
-			</div>
+			// 				</div>
+			// 			</div>
+					
+			// 	</Screen>
+			// </div>
 		);
 	}
 }
-
-const roleFromUserInfo = (roles = [], role) => {
-	const roleCodes = roles.map((role, index) => {
-		return role.code;
-	});
-	return roleCodes && roleCodes.length && roleCodes.indexOf(role) > -1
-		? true
-		: false;
-};
 
 const mapStateToProps = (state, ownProps) => {
 	const { bookings, common, auth, form } = state;
 	const { applicationData } = bookings;
 	const { DownloadPaymentReceiptDetails,DownloadApplicationDetails,DownloadPermissionLetterDetails } = bookings;
-	const { id } = auth.userInfo;
-	const { citizenById } = common || {};
-	const { employeeById, departmentById, designationsById, cities } =
-		common || {};
-	// const { categoriesById } = complaints;
-	const { userInfo } = state.auth;
-	const serviceRequestId = ownProps.match.params.applicationId;
-	let selectedComplaint = applicationData ? applicationData.bookingsModelList[0] : ''
-	let businessService = applicationData ? applicationData.businessService : "";
-	let bookingDocs;
-
-	let pdfBankName = state.screenConfiguration.preparedFinalObject ? state.screenConfiguration.preparedFinalObject.GateWayName:"NA";  
-	console.log("pdfBankName--",pdfBankName)
-
-	let documentMap = applicationData && applicationData.documentMap ? applicationData.documentMap : '';
-	console.log("documentMap-in-osbm--",documentMap)
-	let abc = Object.entries(documentMap)
-	console.log("abc--",abc)
-
-	let xyz = abc[0]
-	console.log(xyz)
-
-	let ab = abc[1]
-	console.log("ab--",ab)
-	let docArray = Object.keys(documentMap).map(function(key){ return documentMap[key] })
-	console.log("docArray--",docArray)
-
-	const { HistoryData } = bookings;	
-	let historyObject = HistoryData ? HistoryData : ''
-	const { paymentData } = bookings;
-	const { fetchPaymentAfterPayment } = bookings;
-
-	let paymentDetailsForReceipt = fetchPaymentAfterPayment;
-	console.log("paymentDetailsForReceipt--",paymentDetailsForReceipt)
-	let paymentDetails;
-	let findCGSTUGST;
-	let addOfBothCGSTUGST;
-	let find50Per;
-	let perFind = 50;
-	let findNumOrNot;
-	let Newugst;
-    let beforePaymentFindArray
-	if (selectedComplaint && selectedComplaint.bkApplicationStatus == "APPROVED") {
-		paymentDetails = fetchPaymentAfterPayment && fetchPaymentAfterPayment.Payments[0] && fetchPaymentAfterPayment.Payments[0].paymentDetails[0].bill;
-	    console.log("paymentDetails--paymentDetails",paymentDetails)
-     if(paymentDetails !== undefined && paymentDetails !== null){
-	findCGSTUGST = paymentDetails.billDetails[0].billAccountDetails
-	console.log("findCGSTUGST--",findCGSTUGST)
-	for(let i = 0; i < findCGSTUGST.length ; i++ ){ //for(let i = 0; i < billAccountDetailsArray.length ; i++ ){
-		if(findCGSTUGST[i].taxHeadCode == "CGST_UTGST_MANUAL_OPEN_SPACE_BOOKING_BRANCH"){
-			addOfBothCGSTUGST = findCGSTUGST[i].amount
-		}
-	}
-	find50Per = (perFind/100) * addOfBothCGSTUGST
-	console.log("find50Per--",find50Per)		
-	findNumOrNot = Number.isInteger(find50Per);
-console.log("findNumOrNot--",findNumOrNot)
-	if(findNumOrNot == true){
-		Newugst = find50Per
-		console.log("trueCondition")
-	}
-	else{
-		Newugst = find50Per.toFixed(2);
-		console.log("second-Newugst-",Newugst)
-	}
-console.log("Newugst-Newugst-Newugst--",Newugst)
-}
-//billDetails[0].billAccountDetails
-	} else {
-		console.log("ComeInElseCondition")
-		paymentDetails = fetchPaymentAfterPayment && fetchPaymentAfterPayment.Payments[0] && fetchPaymentAfterPayment.Payments[0].paymentDetails[0].bill;
-		// paymentDetails = paymentData ? paymentData.Bill[0] : '';
-		paymentDetails = paymentData && paymentData.Bill.length > 0 && paymentData.Bill[0];
-		console.log("paymentDetails-in-ElseCondition--",paymentDetails)
-		if(paymentDetails !== undefined && paymentDetails !== null){
-			beforePaymentFindArray = bookings.paymentData.Bill[0].billDetails[0].billAccountDetails
-			console.log("beforePaymentFindArray--",beforePaymentFindArray)
-			for(let i = 0; i < beforePaymentFindArray.length ; i++ ){ //for(let i = 0; i < billAccountDetailsArray.length ; i++ ){
-				if(beforePaymentFindArray[i].taxHeadCode == "CGST_UTGST_MANUAL_OPEN_SPACE_BOOKING_BRANCH"){
-					addOfBothCGSTUGST = beforePaymentFindArray[i].amount
-				}
-			}
-			find50Per = (perFind/100) * addOfBothCGSTUGST
-			console.log("find50Per--",find50Per)		
-			findNumOrNot = Number.isInteger(find50Per);
-		console.log("findNumOrNot--",findNumOrNot)
-			if(findNumOrNot == true){
-				Newugst = find50Per
-				console.log("trueCondition")
-			}
-			else{
-				Newugst = find50Per.toFixed(2);
-				console.log("second-Newugst-",Newugst)
-			}
-		console.log("Newugst-Newugst-Newugst--",Newugst)
-		}
-	}
-
-
-	let historyApiData = {}
-	if (historyObject) {
-		historyApiData = historyObject;
-	}
 	
-	const role =
-		roleFromUserInfo(userInfo.roles, "GRO") ||
-			roleFromUserInfo(userInfo.roles, "DGRO")
-			? "ao"
-			: roleFromUserInfo(userInfo.roles, "ESCALATION_OFFICER1") ||
-				roleFromUserInfo(userInfo.roles, "ESCALATION_OFFICER2")
-				? "eo"
-				: roleFromUserInfo(userInfo.roles, "CSR")
-					? "csr"
-					: "employee";
-
-	let isAssignedToEmployee = true;
-	if (selectedComplaint && businessService) {
-
-		let details = {
-			applicantName: selectedComplaint.bkApplicantName,
-			status: selectedComplaint.bkApplicationStatus,
-			applicationNo: selectedComplaint.bkApplicationNumber,
-			address: selectedComplaint.bkCompleteAddress,
-			bookingType: selectedComplaint.bkBookingType,
-			sector: selectedComplaint.bkSector,
-			bkEmail: selectedComplaint.bkEmail,
-			bkMobileNumber: selectedComplaint.bkMobileNumber,
-			houseNo: selectedComplaint.bkHouseNo,
-			dateCreated: selectedComplaint.bkDateCreated,
-			areaRequired: selectedComplaint.bkAreaRequired,
-			bkDuration: selectedComplaint.bkDuration,
-			bkCategory: selectedComplaint.bkCategory,
-			constructionType: selectedComplaint.bkConstructionType,
-			villageCity: selectedComplaint.bkVillCity,
-			residentialCommercial: selectedComplaint.bkType,
-			businessService: businessService,
-			bkConstructionType: selectedComplaint.bkConstructionType,
-			bkFromDate: selectedComplaint.bkFromDate,
-			bkToDate: selectedComplaint.bkToDate
-
-		}
-
-
-
-		let transformedComplaint;
-		if (applicationData != null && applicationData != undefined) {
-
-			transformedComplaint = {
-				complaint: details,
-			};
-		}
-
-		const { localizationLabels } = state.app;
-		const complaintTypeLocalised = getTranslatedLabel(
-			`SERVICEDEFS.${transformedComplaint.complaint.complaint}`.toUpperCase(),
-			localizationLabels
-		);
-		
-		return {
-			paymentDetails,
-			historyApiData,
-			DownloadPaymentReceiptDetails,
-			paymentDetailsForReceipt,DownloadApplicationDetails,DownloadPermissionLetterDetails,
-			documentMap,
-			form,
-			transformedComplaint,
-			role,
-			serviceRequestId,
-			isAssignedToEmployee,
-			complaintTypeLocalised,
-			userInfo,
-			xyz,ab,
-			pdfBankName,Newugst
-		};
-	} else {
-		return {
-			paymentDetails,
-			pdfBankName,
-			historyApiData,
-			DownloadPaymentReceiptDetails,
-			paymentDetailsForReceipt,DownloadApplicationDetails,DownloadPermissionLetterDetails,
-			documentMap,
-			form,
-			transformedComplaint: {},
-			role,
-			serviceRequestId,
-			isAssignedToEmployee,
-			userInfo,
-			xyz,
-			ab,Newugst
-		};
-	}
 };
 
 const mapDispatchToProps = dispatch => {

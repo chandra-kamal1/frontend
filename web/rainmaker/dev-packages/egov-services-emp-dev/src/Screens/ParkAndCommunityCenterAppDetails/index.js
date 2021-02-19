@@ -12,8 +12,10 @@ import { prepareFormData } from "egov-ui-kit/redux/common/actions";
 import { getTenantId } from "egov-ui-kit/utils/localStorageUtils";
 import OSMCCBookingDetails from "../AllApplications/components/OSMCCBookingDetails"
 import AppDetails from "./components/ApplicantDetails"; 
-import ViewBankDetails from "./components/ViewBankDetails"; 
+import ViewBankDetails from "./components/ViewBankDetails";
+import RoomCard from "./components/RoomCard";  //RoomCard  PaymentCardForRoom
 import RefundCard from "./components/RefundCard"; 
+import PaymentCardForRoom from "./components/PaymentCardForRoom"; 
 import BookingDetails from "./components/BookingDetails"
 import DocumentPreview from "../AllApplications/components/DocumentPreview"
 import { prepareFinalObject } from "egov-ui-framework/ui-redux/screen-configuration/actions";
@@ -57,6 +59,19 @@ class ApplicationDetails extends Component {
 	constructor(props) {
 		super(props);
 		this.state = {
+			 BKROOM_TAX : '',//operatorCode,Address,hsnCode
+ BKROOM : "",
+BKROOM_ROUND_OFF : "",   
+four : "",
+totalAmountPaid : "",
+PaymentDate : "",
+receiptNumber : "",
+PaymentMode : "",
+transactionNumber : "",
+operatorCode : "",
+Address: "",
+hsnCode : "",
+name: "",
 			openMap: false,
 			docFileData: [],
 			bookingType: '',
@@ -76,7 +91,8 @@ class ApplicationDetails extends Component {
 			modifiedSecondAmount: '',
 			newPaymentDetails: 'NotFound',
 			checkGreaterDate: '',
-			checkNumDays: ''
+			checkNumDays: '',
+			createdDate:''
 		};
 	};
 
@@ -115,6 +131,49 @@ class ApplicationDetails extends Component {
 
 	   let funtenantId = selectedComplaint.tenantId
 	   console.log("funtenantId--",funtenantId)
+
+
+
+	   let mdmsBody = {
+		MdmsCriteria: {
+			tenantId: funtenantId,
+			moduleDetails: [
+
+				{
+					moduleName: "Booking",
+					masterDetails: [
+						{
+							name: "E_SAMPARK_BOOKING",
+						}
+					],
+				},
+
+			],
+		},
+	};
+
+	let payloadRes = null;
+	payloadRes = await httpRequest(
+		"egov-mdms-service/v1/_search",
+		"_search",[],
+		mdmsBody
+	);
+	console.log(payloadRes, "hsncodeAndAll");
+
+let samparkDetail = payloadRes.MdmsRes.Booking.E_SAMPARK_BOOKING[0]
+
+let operatorCode = samparkDetail.operatorCode
+let Address = samparkDetail.centreAddres
+let hsnCode = samparkDetail.hsnCode
+let name = samparkDetail.name
+this.setState({
+	operatorCode:operatorCode,
+	Address:Address,  //operatorCode,Address,hsnCode
+	hsnCode:hsnCode,
+	name:name
+})
+
+
 
 	   let FromDate = selectedComplaint.bkFromDate
 	   console.log("FromDate--",FromDate)
@@ -251,6 +310,82 @@ class ApplicationDetails extends Component {
 		fetchDataAfterPayment(
 			[{ key: "consumerCodes", value: match.params.applicationId }, { key: "tenantId", value: userInfo.tenantId }
 			])
+// let newRoomAppNumber = this.props.RoomApplicationNumber != 'NA' ? this.props.RoomApplicationNumber : ""
+let AppNumber
+let createdDate
+let RoomModel = dataforSectorAndCategory && dataforSectorAndCategory.bookingsModelList ? (dataforSectorAndCategory.bookingsModelList[0].roomsModel ?(dataforSectorAndCategory.bookingsModelList[0].roomsModel.length > 0 ? (dataforSectorAndCategory.bookingsModelList[0].roomsModel):'NA') :'NA'): 'NA'
+if (RoomModel !== "NA"){
+AppNumber = RoomModel[0].roomApplicationNumber
+createdDate = RoomModel[0].createdDate
+let RequestData = [
+	{ key: "consumerCodes", value: AppNumber },
+	{ key: "tenantId", value: userInfo.tenantId }
+	];
+	
+	let payloadfund = await httpRequest(
+		"collection-services/payments/_search",
+		"_search",
+		RequestData,
+		// customRequestInfo
+		);
+	  
+		console.log("RequestData--",RequestData)
+		console.log("payloadfund--",payloadfund)
+
+		let paymentData =  payloadfund ? payloadfund.Payments[0].paymentDetails[0].bill.billDetails[0].billAccountDetails : "NOt found Any Array"
+console.log("paymentData--",paymentData)
+
+let totalAmountPaid = payloadfund ? payloadfund.Payments[0].totalAmountPaid : ""
+
+let PaymentDate = payloadfund ? payloadfund.Payments[0].transactionDate : ""  
+
+let receiptNumber = payloadfund ? payloadfund.Payments[0].paymentDetails[0].receiptNumber : ""  //PaymentDate,receiptNumber,PaymentMode,transactionNumber
+
+let PaymentMode = payloadfund ? payloadfund.Payments[0].paymentMode : ""
+
+let transactionNumber =  payloadfund ? payloadfund.Payments[0].transactionNumber : ""
+
+let BKROOM_TAX = 0;
+let BKROOM = 0;
+let BKROOM_ROUND_OFF = 0;   
+let four = 0;
+
+
+for(let i = 0; i < paymentData.length ; i++ ){
+
+if(paymentData[i].taxHeadCode == "BKROOM_TAX"){
+BKROOM_TAX = paymentData[i].amount
+}
+else if(paymentData[i].taxHeadCode == "BKROOM"){
+BKROOM = paymentData[i].amount
+}
+else if(paymentData[i].taxHeadCode == "BKROOM_ROUND_OFF"){
+BKROOM_ROUND_OFF = paymentData[i].amount
+}
+else if(paymentData[i].taxHeadCode == "ROOM_FACILITATION_CHARGE"){
+four = paymentData[i].amount
+}
+} 
+
+this.setState({
+BKROOM_TAX:BKROOM_TAX,
+BKROOM:BKROOM,
+BKROOM_ROUND_OFF:BKROOM_ROUND_OFF,
+four:four,
+totalAmountPaid:totalAmountPaid,
+PaymentDate:PaymentDate,
+receiptNumber:receiptNumber,
+PaymentMode:PaymentMode,
+transactionNumber:transactionNumber
+})
+//
+
+}
+
+		
+//
+	
+			//RoomApplicationNumber
 		// if(selectedComplaint.bkApplicationStatus === "PENDING_FOR_APPROVAL_CLEARK_DEO" || selectedComplaint.bkApplicationStatus === "PENDING_FOR_APPROVAL_SENIOR_ASSISTANT" || selectedComplaint.bkApplicationStatus === "PENDING_FOR_APPROVAL_AUDIT_DEPARTMENT" ||
 		// selectedComplaint.bkApplicationStatus === "PENDING_FOR_APPROVAL_CAO" || 	selectedComplaint.bkApplicationStatus === "PENDING_FOR_APPROVAL_CAO"
 		// )
@@ -273,8 +408,43 @@ class ApplicationDetails extends Component {
 		let { details } = this.state;
 	}
 
-	BookRoom = () => {
-		this.props.history.push(`/egov-services/ApplyForRoomBooking`);
+BookRoom = async () => {
+		let { prepareFinalObject,userInfo,toggleSnackbarAndSetText } = this.props;
+		let {selectedComplaint} = this.props
+	let ApplicationNumber = selectedComplaint.bkApplicationNumber
+		 let complaintCountRequest = 
+  {
+    "applicationNumber": ApplicationNumber, 
+  }
+  
+let dataforSectorAndCategory = await httpRequest( 	
+  "bookings/api/community/center/_search",
+    "_search",[],
+    complaintCountRequest 
+  );
+console.log("dataforSectorAndCategory --",dataforSectorAndCategory)
+if(dataforSectorAndCategory.bookingsModelList.length > 0){
+
+  prepareFinalObject("RoomBookingData", dataforSectorAndCategory)
+  prepareFinalObject("SetPaymentURL", this.props.history.push)
+  console.log("historyPropsToConsole--",this.props.history.push)
+  console.log("historyPropsToConsole--",this.props.history)
+  this.props.history.push(`/egov-services/ApplyRoomBooking`);
+
+}
+else{
+  
+  toggleSnackbarAndSetText(
+    true,
+    {
+      labelName: "No Application Found With This Application Number",
+      labelKey: `BK_ERR_APPLICATION_NOT_FOUND`
+    },
+    "error"
+  );
+
+}
+		// this.props.history.push(`/egov-services/ApplyForRoomBooking`);
 	}
 
 	calculateCancelledBookingRefundAmount = async (applicationNumber, tenantId, bookingDate) => {
@@ -1228,12 +1398,12 @@ else{
 
 	render() {
 		const dropbordernone = {
-			float: "right",
+			float: "right",  
 			paddingRight: "20px"
 
 		};
 		let { shareCallback } = this;
-		let { comments, openMap,AppName,checkNumDays,checkGreaterDate} = this.state;
+		let { operatorCode,Address,hsnCode,comments, openMap,AppName,name,checkNumDays,checkGreaterDate,createdDate,BKROOM_TAX,BKROOM,BKROOM_ROUND_OFF,four,totalAmountPaid,PaymentDate,receiptNumber,PaymentMode,transactionNumber} = this.state;
 		console.log("CheckstateForRefund--",this.state)
 		let { complaint, timeLine } = this.props.transformedComplaint;
 		let { documentMap,selectedComplaint,Difference_In_Days_check,first } = this.props;
@@ -1402,6 +1572,7 @@ else{
 												}} />
 
 											</div>
+										
 										</div>
 									</div>
 								</div>
@@ -1420,6 +1591,41 @@ else{
 									{...complaint}
 									historyApiData={historyApiData && historyApiData}
 								/>
+
+{this.props.showRoomCard == true ? <RoomCard 
+RoomApplicationNumber = {this.props.RoomApplicationNumber}
+totalNumber = {this.props.totalNumber}
+typeOfRoom = {this.props.typeOfRoom}
+roomFromDate = {this.props.roomFromDate}
+roomToDate = {this.props.roomToDate}
+createdDate={createdDate}
+selectedComplaint={selectedComplaint}
+userInfo={this.props.userInfo}
+BKROOM_TAX = {BKROOM_TAX}
+BKROOM = {BKROOM}
+BKROOM_ROUND_OFF = {BKROOM_ROUND_OFF}
+four = {four}
+totalAmountPaid = {totalAmountPaid}
+PaymentDate = {PaymentDate}
+receiptNumber = {receiptNumber}
+PaymentMode = {PaymentMode}
+transactionNumber = {transactionNumber}
+operatorCode = {operatorCode}
+Address = {Address}
+hsnCode = {hsnCode}
+name = {name}
+ 
+//PaymentDate,receiptNumber,PaymentMode,transactionNumber   operatorCode,Address,hsnCode
+/> : ""}
+
+{this.props.showRoomCard == true ? <PaymentCardForRoom   //BKROOM_TAX,BKROOM,BKROOM_ROUND_OFF,four
+BKROOM_TAX = {BKROOM_TAX}
+BKROOM = {BKROOM}
+BKROOM_ROUND_OFF = {BKROOM_ROUND_OFF}
+four = {four}
+totalAmountPaid = {totalAmountPaid}
+/> : ""}
+
 						 		<ViewBankDetails
 									{...complaint}
 
@@ -1623,7 +1829,7 @@ paymentDetails={this.state.fullAmountDetail && this.state.fullAmountDetail}
 			<Label
 			  buttonLabel={true}
 			  color="#fe7a51"
-			  label="Room Book"
+			  label="Book Room"
 			/>
 		  }
 		  labelStyle={{
@@ -1636,7 +1842,7 @@ paymentDetails={this.state.fullAmountDetail && this.state.fullAmountDetail}
 		  onClick={() => this.BookRoom()}
 		/> 
 
-		  {/* {( this.props.RoomBookingDate === "Valid" && complaint.bkBookingType == "Community Center") ? 
+		  {( this.props.RoomBookingDate == "Valid" && complaint.bkBookingType == "Community Center") ? 
 		  <Button
 		  label={
 			<Label
@@ -1654,7 +1860,7 @@ paymentDetails={this.state.fullAmountDetail && this.state.fullAmountDetail}
 		  style={{ width: "15%" }}
 		  onClick={() => this.BookRoom()}
 		/> 
-		  : ""} */}
+		  : ""}
 
 		  {(Difference_In_Days_check > 15 || Difference_In_Days_check == 15 )? 
 		  <Button
@@ -1880,6 +2086,28 @@ const mapStateToProps = (state, ownProps) => {
 	let selectedNumber = selectedComplaint ? selectedComplaint.bkApplicationNumber : "NotFoundAnyApplicationNumber"
 	console.log("selectedNumber--",selectedNumber)
 
+
+let roomData =selectedComplaint.roomsModel ? (selectedComplaint.roomsModel.length > 0 ? (selectedComplaint.roomsModel) : "NA") : "NA"
+console.log("roomData-----",roomData)
+let RoomApplicationNumber = 'NA';
+let showRoomCard;
+let totalNumber;
+let typeOfRoom;
+let roomFromDate;  
+let roomToDate;
+
+if(roomData !== "NA"){
+	showRoomCard = true;
+	RoomApplicationNumber = roomData[0].roomApplicationNumber;
+	totalNumber = roomData[0].totalNoOfRooms;
+	typeOfRoom = roomData[0].typeOfRoom;
+	roomFromDate = roomData[0].fromDate;
+	roomToDate = roomData[0].toDate;
+} 
+
+let newRoomAppNumber = RoomApplicationNumber != 'NA' ? RoomApplicationNumber : ""
+console.log("newRoomAppNumber--",newRoomAppNumber)
+
 	let bookFDate = selectedComplaint ? selectedComplaint.bkFromDate : ""
 	console.log("bookFDate--",bookFDate)
 
@@ -1899,7 +2127,7 @@ const mapStateToProps = (state, ownProps) => {
 	if(Todaydate.getTime() < RoomDate.getTime()){
 		RoomBookingDate = "Valid"
 	}
-
+console.log("RoomBookingDate--",RoomBookingDate)
 	let first = false;
 	if(dateFromDate < Todaydate){
 		first = true
@@ -1908,16 +2136,10 @@ console.log("first--",first)
 
 let Difference_In_Time_check = dateFromDate.getTime() - Todaydate.getTime();
 console.log("Difference_In_Time--uuuuu-fgfgfg",Difference_In_Time_check)
-   // To calculate the no. of days between two dates
+   
 let Difference_In_Days_check = Difference_In_Time_check / (1000 * 3600 * 24);
 console.log("Difference_In_Days--dadada",Difference_In_Days_check)
 
-/*
- let dateFromDate = new Date(bookingDate)
-	 console.log("dateFromDate--gg",dateFromDate)
-	 let CurrentDate = new Date();
-	 console.log("CurrentDate--",CurrentDate)
-*/
 	let businessService = applicationData ? applicationData.businessService : "";
 	let bookingDocs;
 	let documentMap = applicationData && applicationData.documentMap ? applicationData.documentMap : '';
@@ -1965,7 +2187,7 @@ else{
   let ReceiptPaymentDetails = fetchPaymentAfterPayment;
   console.log("ReceiptPaymentDetails--",ReceiptPaymentDetails)
 
-  let offlinePayementMode = ReceiptPaymentDetails ? ReceiptPaymentDetails.Payments[0].paymentMode : "NotFound"
+  let offlinePayementMode = ReceiptPaymentDetails ? (ReceiptPaymentDetails.Payments[0].paymentMode ): "NotFound"
   console.log("offlinePayementMode--",offlinePayementMode)
 	  
 //transactionDate
@@ -2133,8 +2355,8 @@ for(let i = 0; i < billAccountDetailsArray.length ; i++ ){
 
 		return {
 			paymentDetails,offlineTransactionNum,recNumber,DownloadReceiptDetailsforPCC,refConAmount,RoomBookingDate,
-			offlineTransactionDate,
-			historyApiData,
+			offlineTransactionDate,RoomApplicationNumber,totalNumber,typeOfRoom,roomFromDate,roomToDate,
+			historyApiData,showRoomCard,
 			DownloadPaymentReceiptDetails,
 			paymentDetailsForReceipt, DownloadApplicationDetails, DownloadPermissionLetterDetails,
 			documentMap,
@@ -2156,17 +2378,17 @@ for(let i = 0; i < billAccountDetailsArray.length ; i++ ){
 			REFUNDABLE_SECURITY,
 			PACC_TAX,
 			PACC_ROUND_OFF,
-			FACILITATION_CHARGE,one,two,three,four,five
+			FACILITATION_CHARGE,one,two,three,four,five,newRoomAppNumber
 			
 		};
 	} else {
 		return {
 			paymentDetails,offlineTransactionNum,recNumber,DownloadReceiptDetailsforPCC,refConAmount,RoomBookingDate,
-			offlinePayementMode,Difference_In_Days_check,first,
-			offlineTransactionDate,
+			offlinePayementMode,Difference_In_Days_check,first,showRoomCard,
+			offlineTransactionDate,RoomApplicationNumber,totalNumber,typeOfRoom,roomFromDate,roomToDate,
 			historyApiData,
 			DownloadPaymentReceiptDetails,
-			paymentDetailsForReceipt, DownloadApplicationDetails, DownloadPermissionLetterDetails,
+			paymentDetailsForReceipt, DownloadApplicationDetails, DownloadPermissionLetterDetails,newRoomAppNumber,
 			documentMap,
 			form,
 			transformedComplaint: {},
