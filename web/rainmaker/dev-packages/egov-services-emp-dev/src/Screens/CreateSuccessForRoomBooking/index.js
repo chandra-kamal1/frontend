@@ -206,6 +206,29 @@ this.setState({
   downloadPaymentFunction = async (e) => {
     const { downloadRoomPaymentRecipt, userInfo,createPACCApplicationData,documentMap,CreateRoomApplication,BKROOM_TAX,BKROOM,BKROOM_ROUND_OFF,four} = this.props;
  
+
+    let totalACRoom = 0;
+    let totalNonAcRoom = 0;
+    let FromDate;
+    let ToDate;
+    let CreatedDate;
+    let ApplicationNumber;
+    let discountForRoom;
+      
+    for(let i = 0; i < CreateRoomApplication.data.roomsModel.length; i++){
+    if(CreateRoomApplication.data.roomsModel[i].typeOfRoom == "AC"){
+      totalACRoom = CreateRoomApplication.data.roomsModel[i].totalNoOfRooms
+      FromDate = CreateRoomApplication.data.roomsModel[i].fromDate
+      ToDate = CreateRoomApplication.data.roomsModel[i].toDate
+      CreatedDate = CreateRoomApplication.data.roomsModel[i].createdDate
+      ApplicationNumber = CreateRoomApplication.data.roomsModel[i].roomApplicationNumber
+      discountForRoom = CreateRoomApplication.data.roomsModel[i].discount
+    }
+    if(CreateRoomApplication.data.roomsModel[i].typeOfRoom == "NON-AC"){
+      totalNonAcRoom = CreateRoomApplication.data.roomsModel.totalNoOfRooms	
+    }
+    }
+
 let RoomFromDate = CreateRoomApplication.data.roomsModel[0].fromDate
 let RoomToDate = CreateRoomApplication.data.roomsModel[0].toDate
 let createdDate = CreateRoomApplication.data.roomsModel[0].createdDate
@@ -248,7 +271,7 @@ else{
     if(userInfo.roles[i].code == "BK_E-SAMPARK-CENTER"){
       approverName = userInfo.roles[i].name
     }
-  }
+  } 
 
   let BookingInfo = [
     {
@@ -258,8 +281,8 @@ else{
         "booking": {
             "bkLocation":  applicationDetails.bkLocation,
             "bkDept":  applicationDetails.bkBookingType,
-            "noOfAcRooms": AC,
-            "noOfNonAcRooms": NonAC,
+            "noOfAcRooms": totalACRoom,
+            "noOfNonAcRooms": totalNonAcRoom,
             "bookingPurpose": applicationDetails.bkBookingPurpose,
             "bkStartDate":RoomFromDate,
             "bkEndDate":  RoomToDate,
@@ -370,7 +393,32 @@ downloadRoomPaymentRecipt({ BookingInfo: BookingInfo })
   downloadPermissionLetterFunction = async (e) => {
     const { downloadRoomPermissionLetter, userInfo,createPACCApplicationData,documentMap,CreateRoomApplication,BKROOM_TAX,BKROOM,BKROOM_ROUND_OFF,four} = this.props;
 
-    let RoomFromDate = CreateRoomApplication.data.roomsModel[0].fromDate
+
+    let totalACRoom = 0;
+    let totalNonAcRoom = 0;
+    let FromDate;
+    let ToDate;
+    let CreatedDate;
+    let ApplicationNumber;
+    let discountForRoom;
+      
+    for(let i = 0; i < CreateRoomApplication.data.roomsModel.length; i++){
+    if(CreateRoomApplication.data.roomsModel[i].typeOfRoom == "AC"){
+      totalACRoom = CreateRoomApplication.data.roomsModel[i].totalNoOfRooms
+      FromDate = CreateRoomApplication.data.roomsModel[i].fromDate
+      ToDate = CreateRoomApplication.data.roomsModel[i].toDate
+      CreatedDate = CreateRoomApplication.data.roomsModel[i].createdDate
+      ApplicationNumber = CreateRoomApplication.data.roomsModel[i].roomApplicationNumber
+      discountForRoom = CreateRoomApplication.data.roomsModel[i].discount
+    }
+    if(CreateRoomApplication.data.roomsModel[i].typeOfRoom == "NON-AC"){
+      totalNonAcRoom = CreateRoomApplication.data.roomsModel.totalNoOfRooms	
+    }
+    }
+
+
+
+let RoomFromDate = CreateRoomApplication.data.roomsModel[0].fromDate
 let RoomToDate = CreateRoomApplication.data.roomsModel[0].toDate
 let createdDate = CreateRoomApplication.data.roomsModel[0].createdDate
 let typeOfRoom = CreateRoomApplication.data.roomsModel[0].typeOfRoom
@@ -425,8 +473,8 @@ else{
         "bookingDetails": {
             "bkLocation": applicationDetails.bkLocation,
             "bkDept": applicationDetails.bkBookingType,
-            "noOfACRooms": AC,
-            "noOfNonACRooms": NonAC,
+            "noOfACRooms": totalACRoom,
+            "noOfNonACRooms": totalNonAcRoom,
             "bookingPurpose": applicationDetails.bkBookingPurpose,
             "bkStartDate": RoomFromDate,
             "bkEndDate": RoomToDate,
@@ -434,7 +482,7 @@ else{
             "venueName": applicationDetails.bkLocation,
             "sector": applicationDetails.bkSector,
             "bookingType":applicationDetails.bkBookingType,
-            "applicationDate":createdDate,
+             "applicationDate":createdDate,
             "bookingPeriod": getDurationDate(
               applicationDetails.bkFromDate,
               applicationDetails.bkToDate
