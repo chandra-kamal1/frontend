@@ -7,7 +7,26 @@ import "./index.css";
 
 class CGBookingDetails extends Component {
 
-  render() {
+
+
+ 
+render() {
+
+let duplicateAcRoom;
+let duplicateNonAcRoom;
+if(this.props.totalACRoom == 0){
+  duplicateAcRoom = "0"
+}
+else{
+  duplicateAcRoom = this.props.totalACRoom
+}
+if(this.props.totalNonAcRoom == 0){
+  duplicateNonAcRoom = "0"
+}
+else{
+  duplicateNonAcRoom = this.props.totalNonAcRoom
+}
+
 return (
       <div>
         <Card
@@ -18,57 +37,78 @@ return (
                 <Label label="BK_MYBK_COMMUNITY_CENTER_DETAILS" containerStyle={{ marginLeft: "13px" }} labelClassName="dark-heading" />
               </div>
               <div key={10} className="complaint-detail-full-width">
-              
-              <div className="complaint-detail-detail-section-status row">
-              <div className="col-md-4">
-                    <Label className="col-xs-12  col-sm-12 col-md-12 status-color" label="BK_MYBK_COMMON_APPLICATION_NO" />
+                <div className="complaint-detail-detail-section-status row">
+                  <div className="col-md-4">
+                    <Label className="col-xs-12  col-sm-12 col-md-12 status-color" label="BK_MY_BK_ROOM_APPLICATION_NUMBER" />
                     <Label
-                      labelStyle={{ color: "inherit" }}
                       className="col-xs-12  col-sm-12 col-md-12  status-result-color"
-                      id="complaint-details-complaint-number"
-                      label={applicationNo}
+                      label={this.props.ApplicationNumber}
+                      id="complaint-details-submission-date"
+                      labelStyle={{ color: "inherit" }}
                     />
                   </div>
-                            <div className="col-md-4">
-                                <Label className="col-xs-12  col-sm-12 col-md-12 status-color" label="BK_MYBK_TYPE_ROOM_BOOK" />
-                                <Label
-                                    className="col-xs-12  col-sm-12 col-md-12  status-result-color"
-                                    id="complaint-details-current-status"
-                                    labelStyle={{ color: "inherit" }}
-                                    label={this.props.purpose}
-                                />
-                            </div>
-                            <div className="col-md-4">
-                                <Label className="col-xs-12  col-sm-12 col-md-12 status-color" label="BK_MYBK_NUMBER_ROOM_BOOK" />
-                                <Label
-                                    className="col-xs-12  col-sm-12 col-md-12  status-result-color"
-                                    id="complaint-details-current-status"
-                                    labelStyle={{ color: "inherit" }}
-                                    label={this.props.houseNo}
-                                />
-                            </div>
-
-                            <div className="col-md-4">
-                                <Label className="col-xs-12  col-sm-12 col-md-12 status-color" label="BK_MYBK_ROOM_BOOK_FROM_DATE" />
-                                <Label
-                                    className="col-xs-12  col-sm-12 col-md-12  status-result-color"
-                                    id="complaint-details-current-status"
-                                    labelStyle={{ color: "inherit" }}
-                                    label={this.props.mobileNo}
-                                />
-                            </div>
-
-                            <div className="col-md-4">
-                                <Label className="col-xs-12  col-sm-12 col-md-12 status-color" label="BK_MYBK_CC_ROOM_BOOK_TO_DATE" />
-                                <Label
-                                    labelStyle={{ color: "inherit" }}
-                                    className="col-xs-12  col-sm-12 col-md-12  status-result-color"
-                                    id="complaint-details-complaint-number"
-                                    label={this.props.gstNo}
-                                />
-                            </div>  
-                          </div>
-            </div>
+                  <div className="col-md-4">
+                    <Label className="col-xs-12  col-sm-12 col-md-12 status-color" label="BK_MY_BK__AC_ROOM_TOTAL_NUMBER" />
+                    <Label
+                      className="col-xs-6  col-sm-8 col-md-10  status-result-color"
+                      id="complaint-details-current-status"
+                      labelStyle={{ color: "inherit" }}
+                      label={duplicateAcRoom}
+                    />
+                  </div>
+                  <div className="col-md-4">
+                    <Label className="col-xs-12  col-sm-12 col-md-12 status-color" label="BK_MY_BK_NON_AC_ROOM_TOTAL_NUMBER" />
+                    <Label
+                      className="col-xs-6  col-sm-8 col-md-10  status-result-color"
+                      id="complaint-details-current-status"
+                      labelStyle={{ color: "inherit" }}
+                      label={duplicateNonAcRoom}
+                    />
+                  </div>
+                  <div className="col-md-4">
+                    <Label className="col-xs-112  col-sm-12 col-md-12 status-color" label="BK_MY_BK_ROOM_CREATED_DATE" />
+                    <Label
+                      className="col-xs-12 col-sm-12 col-md-12  status-result-color"
+                     
+                      id="complaint-details-submission-date"
+                      labelStyle={{ color: "inherit" }}
+                      label={this.props.CreatedDate}//bkIfscCode
+                    />
+                  </div>
+             
+                  <div className="col-md-4">
+                    <Label className="col-xs-112  col-sm-12 col-md-12 status-color" label="BK_MY_BK_ROOM_FROM_DATE" />
+                    <Label
+                      className="col-xs-12 col-sm-12 col-md-12  status-result-color"
+                    
+                      id="complaint-details-submission-date"
+                      labelStyle={{ color: "inherit" }}
+                      label={this.props.FromDate}
+                    />
+                  </div>
+                  <div className="col-md-4">
+                    <Label className="col-xs-112  col-sm-12 col-md-12 status-color" label="BK_MY_BK_ROOM_TO_DATE" />
+                    <Label
+                      className="col-xs-12 col-sm-12 col-md-12  status-result-color"
+                    
+                      id="complaint-details-submission-date"
+                      labelStyle={{ color: "inherit" }}
+                      label={this.props.ToDate}
+                    />
+                  </div>
+                  <div className="col-md-4">
+                    <Label className="col-xs-112  col-sm-12 col-md-12 status-color" label="BK_MY_BK_ROOM_APPLIED_DISCOUNT" />
+                    <Label
+                      className="col-xs-12 col-sm-12 col-md-12  status-result-color"
+                    
+                      id="complaint-details-submission-date"
+                      labelStyle={{ color: "inherit" }}
+                      label={this.props.discountForRoom !== undefined && this.props.discountForRoom !== null ? this.props.discountForRoom : this.props.discount}
+                    />
+                  </div>
+               
+                </div>
+              </div>
           </div>
         }
       />

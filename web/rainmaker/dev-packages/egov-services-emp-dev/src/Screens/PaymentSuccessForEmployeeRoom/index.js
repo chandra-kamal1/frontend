@@ -17,7 +17,15 @@ import { httpRequest } from "egov-ui-kit/utils/api";
  
 class CreateWBTApplicationSuccess extends Component {
 
-
+	constructor(props) {
+		super(props);
+		this.state = {
+	operatorCode : "",
+  Address : "",
+  hsnCode : "",
+  name : ""
+}
+	}
   NumInWords = (number) => {
 		const first = [
 			"",
@@ -87,71 +95,72 @@ class CreateWBTApplicationSuccess extends Component {
 
 
   Submit = async () => {
-	  let {discountForRoom,GlobalNonAccRoomToBook,GlobalAccRoomToBook,RoomId,AppNum,DataForRoomBooking,roomFromDate,roomToDate,userInfo,bothRoom,typeOfRoom,totalRoom} = this.props
+	  let {acRoomId,nonAcRoomId,discountForRoom,GlobalNonAccRoomToBook,GlobalAccRoomToBook,RoomId,AppNum,DataForRoomBooking,roomFromDate,roomToDate,userInfo,bothRoom,typeOfRoom,totalRoom,updateNumOfAcRoom,updateNumOfNonAcRoom} = this.props
 console.log("typesforDiscount--",typeof(discountForRoom))
+
 	  let BothRoomSelect=[];
 	  if(bothRoom == "Both"){
 		  console.log("one")
-		  BothRoomSelect[0] = 
+		  BothRoomSelect = [
  
-			  { "id": RoomId,
+			  { "id": acRoomId,
 			  "roomApplicationNumber": AppNum,
 				  "action": "OFFLINE_APPLY",
 				  "remarks": "string",
 				  "roomBusinessService": "BKROOM",
 				  "discount": discountForRoom,
-				   "totalNoOfRooms": GlobalAccRoomToBook,
-					"typeOfRoom": "AC",
+				   "totalNoOfRooms": updateNumOfAcRoom,
+					"typeOfRoom": "AC",            //updateNumOfAcRoom,updateNumOfNonAcRoom
 				  "fromDate": roomFromDate,
 				  "toDate": roomToDate
 				},
 				{
-				"id": RoomId,
+				"id": nonAcRoomId,
 				"roomApplicationNumber": AppNum,
 				"action": "OFFLINE_APPLY",
 				  "remarks": "string",
 				  "discount": discountForRoom,
 				  "roomBusinessService": "BKROOM",
-				  "totalNoOfRooms": GlobalNonAccRoomToBook,
+				  "totalNoOfRooms": updateNumOfNonAcRoom,
 				  "typeOfRoom": "NON-AC",
 				  "fromDate": roomFromDate,
 				  "toDate":roomToDate
-				  }
+				  }]
 
 				   }
 
 	 else if(bothRoom == "AC"){
 		 console.log("two")
-	  BothRoomSelect[0] = 
+	  BothRoomSelect = [
 		  {
-			"id": RoomId,
+			"id": acRoomId,
 				"roomApplicationNumber": AppNum,
 				"action": "OFFLINE_APPLY",
 			"remarks": "string",
 			"roomBusinessService": "BKROOM",
 			"discount": discountForRoom,
-			 "totalNoOfRooms": totalRoom,
+			 "totalNoOfRooms": updateNumOfAcRoom,
 			  "typeOfRoom": typeOfRoom,
 			"fromDate": roomFromDate,
 			"toDate": roomToDate
-		  }
+		  }]
 		
 				  }
 			  else if (bothRoom == "NON-AC"){
 				  console.log("three")
-				  BothRoomSelect[0] = 
+				  BothRoomSelect = [
 					  {
-						"id": RoomId,
+						"id": nonAcRoomId,
 				"roomApplicationNumber": AppNum,
 				"action": "OFFLINE_APPLY",
 						"remarks": "string",
 						"roomBusinessService": "BKROOM",
 						"discount": discountForRoom,
-						 "totalNoOfRooms": totalRoom,
+						 "totalNoOfRooms": updateNumOfNonAcRoom,
 						  "typeOfRoom": typeOfRoom,
 						"fromDate": roomFromDate,
 						"toDate": roomToDate
-					  }
+					  }]
 			  }
 console.log("BothRoomSelect--success--",BothRoomSelect)
 	  
@@ -271,7 +280,7 @@ this.props.history.push(`/egov-services/RoomBooking-Created-Successfully`);
 
 
   };
-  componentDidMount = async () => {   
+  componentDidMount = async () => {  
   }
 
 	downloadPaymentReceiptButton = async (e) => {
@@ -405,14 +414,14 @@ this.props.history.push(`/egov-services/RoomBooking-Created-Successfully`);
           ReceiptNumber={RecNumber}
         />
         <div className="responsive-action-button-cont">
-          <Button
+          {/* <Button
             className="responsive-action-button"
             primary={true}
             label={<Label buttonLabel={true} label="BK_CORE_COMMON_DOWNLOAD" />}
             fullWidth={true}
             onClick={this.downloadPaymentReceiptButton}
             style={{ marginRight: 18 }}
-          />
+          /> */}
           <Button
             id="resolve-success-continue"
             primary={true}
@@ -453,6 +462,28 @@ console.log("CreateRoomApplication-",CreateRoomApplication)
 let AppNum = CreateRoomApplication.data.roomsModel[0].roomApplicationNumber
 console.log("AppNum--AppNum",AppNum)
 
+let acRoomId;  //acRoomId,nonAcRoomId
+let nonAcRoomId;
+let updateNumOfAcRoom; //updateNumOfAcRoom,updateNumOfNonAcRoom
+
+let updateNumOfNonAcRoom;
+//data.roomsModel
+for(let i = 0; i < CreateRoomApplication.data.roomsModel.length; i++){
+console.log("CreateRoomApplication.data.roomsModel",CreateRoomApplication.data.roomsModel)
+if(CreateRoomApplication.data.roomsModel[i].typeOfRoom == "AC"){
+	console.log("CreateRoomApplication.TypeOfAcRoom",CreateRoomApplication.data.roomsModel[i])
+	updateNumOfAcRoom = CreateRoomApplication.data.roomsModel[i].totalNoOfRooms   
+	acRoomId = CreateRoomApplication.data.roomsModel[i].id
+}
+if(CreateRoomApplication.data.roomsModel[i].typeOfRoom == "NON-AC"){
+	nonAcRoomId = CreateRoomApplication.data.roomsModel[i].id
+	updateNumOfNonAcRoom = CreateRoomApplication.data.roomsModel[i].totalNoOfRooms
+}
+}
+console.log("acRoomId--",acRoomId)
+console.log("nonAcRoomId--",nonAcRoomId)
+console.log("updateNumOfAcRoom--",updateNumOfAcRoom)
+console.log("updateNumOfNonAcRoom--",updateNumOfNonAcRoom)
 let totalRoom = CreateRoomApplication.data.roomsModel[0].totalNoOfRooms
 console.log("totalRoom--",totalRoom)
 
@@ -473,7 +504,7 @@ let roomFromDate = CreateRoomApplication.data.roomsModel[0].fromDate
 console.log("roomFromDate--roomFromDate",roomFromDate)
 
 let roomToDate = CreateRoomApplication.data.roomsModel[0].toDate
-console.log("roomToDate--roomToDate",roomToDate)   //roomFromDate,roomToDate
+console.log("roomToDate--roomToDate",roomToDate)   //roomFromDate,roomToDatep  
 
 let RoomId = CreateRoomApplication.data.roomsModel[0].id
 console.log("RoomId--",RoomId)
@@ -531,7 +562,7 @@ else if(billAccountDetailsArray[i].taxHeadCode == "FACILITATION_CHARGE"){
 }
 }
 
-return {typeOfRoom,totalRoom,GlobalNonAccRoomToBook,GlobalAccRoomToBook,discountForRoom,
+return {typeOfRoom,totalRoom,GlobalNonAccRoomToBook,GlobalAccRoomToBook,discountForRoom,acRoomId,nonAcRoomId,updateNumOfAcRoom,updateNumOfNonAcRoom,
 	RecNumber,offlinePayment,offlineTransactionNum,offlineTransactionDate,AppNum,roomFromDate,roomToDate,
 	offlinePayementMode,totalAmountPaid,totalAmount,RoomBookingData,RoomId,DataForRoomBooking,userInfo,bothRoom
 }

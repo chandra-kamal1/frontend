@@ -92,6 +92,7 @@ else if(discountType == "20%"){
 
         let fid = documentMap ? Object.keys(documentMap) : ""
         let Booking = {
+            "uuid": userInfo.uuid,
            "bkRemarks": ReasonForDiscount,
             "discount": finalDiscount,
             "bkBookingType": venueType,

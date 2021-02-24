@@ -412,7 +412,7 @@ const routes = [
       hideTitle: false,
       customFor: "employee",
       customTitle: "Make Offline Payment",
-      customTitle: "BK_MYBK_APPLY_FOR_ROOM_BOOKING"
+      // customTitle: "BK_MYBK_APPLY_FOR_ROOM_BOOKING"
     }
   },
   {

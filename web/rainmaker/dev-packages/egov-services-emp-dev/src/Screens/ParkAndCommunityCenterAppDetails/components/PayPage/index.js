@@ -454,9 +454,10 @@ const mapStateToProps = state => {
 
     let paymentDataOne = paymentData ? paymentData : "wrong";
     console.log("paymentDataOne--",paymentDataOne)
+
     let checkBillLength =  paymentDataOne != "wrong" ? paymentDataOne.Bill.length > 0 : "";
 	console.log("paymentData--",paymentData ? paymentData : "NopaymentData")
-
+    // Bill[0].totalAmount
     let billAccountDetailsArray =  checkBillLength ? paymentDataOne.Bill[0].billDetails[0].billAccountDetails : "NOt found Any Array"
     console.log("billAccountDetailsArray--",billAccountDetailsArray)
     let one = 0;
@@ -505,12 +506,12 @@ console.log("seven--",seven ? seven : "sdfg")
 	const { fetchPaymentAfterPayment } = bookings;
 	console.log("fetchPaymentAfterPayment--",fetchPaymentAfterPayment ? fetchPaymentAfterPayment : "NofetchPaymentAfterPaymentData")
 
-    
-    
+ 
+let abc = applicationData !== undefined && applicationData !== null ? (applicationData.bookingsModelList != undefined && applicationData.bookingsModelList != null ? (applicationData.bookingsModelList.length > 0 ? (applicationData.bookingsModelList): "NA"): "NA") : "NA"
 
+    if(abc !== "NA"){
 
-
-    if(selectedComplaint && selectedComplaint.bkApplicationStatus == "OFFLINE_INITIATE" || selectedComplaint.bkApplicationStatus == "OFFLINE_INITIATED"){
+    if(selectedComplaint && selectedComplaint.bkApplicationStatus != undefined && selectedComplaint.bkApplicationStatus != null && selectedComplaint.bkApplicationStatus == "OFFLINE_INITIATE" || selectedComplaint.bkApplicationStatus == "OFFLINE_INITIATED"){
         console.log("offlineApplied--",selectedComplaint.bkApplicationStatus)
            if(selectedComplaint.bkPaymentStatus == "SUCCESS"){
             console.log("one")
@@ -523,7 +524,7 @@ console.log("seven--",seven ? seven : "sdfg")
             console.log("paymentDetails-two--",paymentDetails)
             }
         }
-        else if(selectedComplaint && selectedComplaint.bkApplicationStatus == "OFFLINE_RE_INITIATED" || selectedComplaint.bkApplicationStatus == "OFFLINE_RE_INITIATE"){
+        else if(selectedComplaint && selectedComplaint.bkApplicationStatus != undefined && selectedComplaint.bkApplicationStatus != null &&selectedComplaint.bkApplicationStatus == "OFFLINE_RE_INITIATED" || selectedComplaint.bkApplicationStatus == "OFFLINE_RE_INITIATE"){
                   console.log("OFFLINE_RE_INITIATE--",selectedComplaint.bkApplicationStatus)
                   console.log("one+++++")
                   paymentDetails = paymentData ? paymentData.Bill[0] : '';
@@ -534,7 +535,7 @@ console.log("seven--",seven ? seven : "sdfg")
             paymentDetails = fetchPaymentAfterPayment && fetchPaymentAfterPayment.Payments[0] && fetchPaymentAfterPayment.Payments[0].paymentDetails[0].bill;
         
           }
-
+        }
 
     let TotalAmount  = paymentDetails ? paymentDetails.totalAmount : "NotFoundAnyAmount";
     console.log("TotalAmount--",TotalAmount)

@@ -30,7 +30,7 @@ class SummaryDetails extends Component {
         createPACCApp: '',
         CashPaymentApplicationNumber: '',
         appStatus: '',
-        currentAppStatus: ''
+        currentAppStatus: '' 
     }
 
     componentDidMount = async () => {
@@ -40,7 +40,7 @@ class SummaryDetails extends Component {
  let BothRoomSelect=[];
         if(bothRoom == "Both"){
             console.log("first")
-            BothRoomSelect[0] = 
+            BothRoomSelect = [
                 {
                     "action": "OFFLINE_INITIATE",
                     "remarks": "string",
@@ -60,13 +60,12 @@ class SummaryDetails extends Component {
                     "typeOfRoom": "NON-AC",
                     "fromDate": roomFromDate,
                     "toDate":roomToDate
-                    }
+                  }]
+                }
 
-                     }
-
-       else if(bothRoom == "AC"){
+       if(bothRoom == "AC"){
         console.log("second")
-        BothRoomSelect[0] = 
+        BothRoomSelect = [
             {
               "action": "OFFLINE_INITIATE",
               "remarks": "string",
@@ -76,12 +75,11 @@ class SummaryDetails extends Component {
                 "typeOfRoom": this.props.TypeOfRoomToBook,
               "fromDate": roomFromDate,
               "toDate": roomToDate
-            }
-          
+            }]
                     }
-                else if (bothRoom == "NON-AC"){
+                if (bothRoom == "NON-AC"){
                     console.log("three")
-                    BothRoomSelect[0] = 
+                    BothRoomSelect = [
                         {
                           "action": "OFFLINE_INITIATE",
                           "remarks": "string",
@@ -91,7 +89,7 @@ class SummaryDetails extends Component {
                             "typeOfRoom": this.props.TypeOfRoomToBook,
                           "fromDate": roomFromDate,
                           "toDate": roomToDate
-                        }
+                        }]
                       
                 }
 console.log("BothRoomSelect--",BothRoomSelect)

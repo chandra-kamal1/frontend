@@ -13,9 +13,13 @@ import { getTenantId } from "egov-ui-kit/utils/localStorageUtils";
 // import OSBMBookingDetails from "../AllApplications/components/OSBMBookingDetails"
 // import DocumentPreview from "../AllApplications/components/DocumentPreview"
 import { prepareFinalObject } from "egov-ui-framework/ui-redux/screen-configuration/actions";
+import PaymentCardForRoom from "../../ParkAndCommunityCenterAppDetails/components/PaymentCardForRoom"
+import CombinedRoomDetail from "../CombinedRoomDetail"
+import ActionButtonDropdown from '../../../modules/ActionButtonDropdown'
 // import PaymentDetails from "../AllApplications/components/PaymentDetails"
 // import ApproveBooking from "../ApplicationResolved";
 // import RejectBooking from "../RejectComplaint";
+// import ActionButtonDropdown from '../../modules/ActionButtonDropdown'
 import axios from "axios";
 import jp, { value } from "jsonpath";
 import { httpRequest } from "egov-ui-kit/utils/api";
@@ -35,7 +39,7 @@ import {
 import {
 	fetchApplications, fetchPayment, fetchHistory, fetchDataAfterPayment, downloadPaymentReceipt, downloadApplication,
 	sendMessage,downloadPermissionLetter,
-	sendMessageMedia
+	sendMessageMedia,downloadRoomPaymentRecipt,downloadRoomPermissionLetter
 } from "egov-ui-kit/redux/bookings/actions";
 import { connect } from "react-redux";
 // import DialogContainer from '../../modules/DialogContainer';
@@ -51,7 +55,7 @@ import MuiDialogActions from '@material-ui/core/DialogActions';
 import IconButton from '@material-ui/core/IconButton';
 import CloseIcon from '@material-ui/icons/Close';
 import Typography from '@material-ui/core/Typography';
-
+import { convertEpochToDate, getDurationDate,getFileUrlFromAPI } from '../../../modules/commonFunction'
 
 
 const styles = (theme) => ({
@@ -98,7 +102,28 @@ class ApplicationDetails extends Component {
 			actionOpen: false,
 			BankName: '',
 			RoomDocument: '',
-			commRoomData: ''
+			commRoomData: '',
+			TotalPaidAmount : '',
+BKROOM_TAX : '',
+BKROOM : '',
+BKROOM_ROUND_OFF : '',
+four : '',
+totalACRoom : 0,
+totalNonAcRoom : 0,
+FromDate : "",
+ToDate : "",
+CreatedDate : "",
+ApplicationNumber : "",
+discountForRoom : "",
+AllValues : "",
+operatorCode : "",
+Address: "",
+hsnCode : "",
+name: "",
+PaymentDate : "",
+			receiptNumber : "",
+			PaymentMode : "",
+			transactionNumber : ""
 		};
 	};
 
@@ -116,13 +141,60 @@ class ApplicationDetails extends Component {
 
  
 	componentDidMount = async () => {
-
+const {userInfo} = this.props
 		let fetchUrl = window.location.pathname;
         console.log(fetchUrl)
          
         let fetchApplicationNumber = fetchUrl.substring(fetchUrl.lastIndexOf('/') + 1)
         console.log("fetchApplicationNumber--",fetchApplicationNumber)
 
+		let mdmsBody = {
+			MdmsCriteria: {
+				tenantId: userInfo.tenantId,
+				moduleDetails: [
+	
+					{
+						moduleName: "Booking",
+						masterDetails: [
+							{
+								name: "E_SAMPARK_BOOKING",
+							}
+						],
+					},
+	
+				],
+			},
+		};
+	
+		let payloadRes = null;
+		payloadRes = await httpRequest(
+			"egov-mdms-service/v1/_search",
+			"_search",[],
+			mdmsBody
+		);
+		console.log(payloadRes, "hsncodeAndAll");
+	
+	let samparkDetail = payloadRes.MdmsRes.Booking.E_SAMPARK_BOOKING
+
+	let operatorCode;
+	let Address;
+	let hsnCode;
+	let name;
+
+	for(let i = 0; i < samparkDetail.length; i++){
+      if(samparkDetail[i].id == userInfo.fatherOrHusbandName){
+		operatorCode = samparkDetail[i].operatorCode
+		hsnCode = samparkDetail[i].hsnCode
+		name = samparkDetail[i].name
+		Address = samparkDetail[i].centreAddres
+		}
+	}
+	this.setState({
+		operatorCode:operatorCode,
+		Address:Address,  //operatorCode,Address,hsnCode
+		hsnCode:hsnCode,
+		name:name
+	})
    let createAppData = {
     "applicationNumber": fetchApplicationNumber,
 	"applicationStatus": "",
@@ -151,15 +223,118 @@ class ApplicationDetails extends Component {
 	  }
     console.log("AllKeysOfRoom--",AllKeysOfRoom)
 	console.log("RoomApplicationNumber--",AllKeysOfRoom[0].roomApplicationNumber,AllKeysOfRoom[0].typeOfRoom)
-	//["RoomsModel(id=8fa9e31d-f71a-4aff-8e55-a2879e124b4e, roomApplicationNumber=CH-BK-ROOM-2021-02-16-004311, typeOfRoom=AC, totalNoOfRooms=25, communityApplicationNumber=CH-BK-2021-02-16-004309, roomApplicationStatus=OFFLINE_APPLIED, roomBusinessService=BKROOM, remarks=string, action=OFFLINE_APPLY, lastModifiedDate=2021-02-16, createdDate=2021-02-16, fromDate=2021-04-22, toDate=2021-04-22, discount=null, facilationCharge=null, roomPaymentStatus=null)"]
 	AllValues = Object.values(RoomCommData)
 	console.log("AllValues--",AllValues);
-	this.props.prepareFinalObject("DataOfRoomAndCommunity.MainData",AllValues[0])
+	this.setState({
+		AllValues :AllValues	
+	})
+//[0].roomsModel   
+console.log("AllValuesZeroIndex--",AllValues[0].roomsModel)
+
+let totalACRoom = 0;
+let totalNonAcRoom = 0;
+let FromDate;
+let ToDate;
+let CreatedDate;
+let ApplicationNumber;
+let discountForRoom;
+	
+for(let i = 0; i < AllValues[0].roomsModel.length; i++){
+if(AllValues[0].roomsModel[i].typeOfRoom == "AC"){
+	totalACRoom = AllValues[0].roomsModel[i].totalNoOfRooms
+	FromDate = AllValues[0].roomsModel[i].fromDate
+	ToDate = AllValues[0].roomsModel[i].toDate
+	CreatedDate = AllValues[0].roomsModel[i].createdDate
+	ApplicationNumber = AllValues[0].roomsModel[i].roomApplicationNumber
+	discountForRoom = AllValues[0].roomsModel[i].discount
+}
+if(AllValues[0].roomsModel[i].typeOfRoom == "NON-AC"){
+	totalNonAcRoom = AllValues[0].roomsModel[i].totalNoOfRooms	
+}
+}
+this.setState({
+	totalACRoom : totalACRoom,
+	totalNonAcRoom : totalNonAcRoom,
+	FromDate : FromDate,
+	ToDate : ToDate,
+	CreatedDate : CreatedDate,
+	ApplicationNumber : ApplicationNumber,
+	discountForRoom :discountForRoom
+})
+console.log("totalACRoom--",totalACRoom)
+console.log("totalNonAcRoom--",totalNonAcRoom)
+console.log("FromDate--",FromDate)
+console.log("ToDate--",ToDate)
+console.log("CreatedDate--",CreatedDate)
+
+
+this.props.prepareFinalObject("DataOfRoomAndCommunity.MainData",AllValues[0])
 	this.setState({
 		RoomDocument:documentForBothBooking,
 		commRoomData:AllValues[0]
 	})
+
+let RequestData = [
+	{ key: "consumerCodes", value: fetchApplicationNumber},
+	{ key: "tenantId", value: userInfo.tenantId }
+	];
+	
+	let ResponseOfPaymentCall = await httpRequest(
+		"collection-services/payments/_search",
+		"_search",
+		RequestData,
+		);
+	  
+		console.log("RequestData--",RequestData)
+		console.log("ResponseOfPaymentCall--",ResponseOfPaymentCall)
+		let TotalPaidAmount = ResponseOfPaymentCall ? ResponseOfPaymentCall.Payments[0].totalAmountPaid : ""
+		console.log("totalAmountPaid--",TotalPaidAmount)
+			let paymentData =  ResponseOfPaymentCall ? (ResponseOfPaymentCall.Payments.length > 0 ? (ResponseOfPaymentCall.Payments[0].paymentDetails[0].bill.billDetails[0].billAccountDetails): "NOt found Any Array") : "NOt found Any Array"
+			console.log("paymentData--",paymentData)
+		
+			let PaymentDate = ResponseOfPaymentCall ? ResponseOfPaymentCall.Payments[0].transactionDate : ""  
+
+			let receiptNumber = ResponseOfPaymentCall ? ResponseOfPaymentCall.Payments[0].paymentDetails[0].receiptNumber : ""  //PaymentDate,receiptNumber,PaymentMode,transactionNumber
+			
+			let PaymentMode = ResponseOfPaymentCall ? ResponseOfPaymentCall.Payments[0].paymentMode : ""
+			
+			let transactionNumber =  ResponseOfPaymentCall ? ResponseOfPaymentCall.Payments[0].transactionNumber : ""
+
+		let BKROOM_TAX = 0;
+		let BKROOM = 0;
+		let BKROOM_ROUND_OFF = 0;  
+		let four = 0;
+		
+		for(let i = 0; i < paymentData.length ; i++ ){
+		
+		if(paymentData[i].taxHeadCode == "BKROOM_TAX"){  
+		BKROOM_TAX = paymentData[i].amount
+		}
+		else if(paymentData[i].taxHeadCode == "BKROOM"){
+		BKROOM = paymentData[i].amount
+		}
+		else if(paymentData[i].taxHeadCode == "BKROOM_ROUND_OFF"){
+		BKROOM_ROUND_OFF = paymentData[i].amount
+		}
+		else if(paymentData[i].taxHeadCode == "ROOM_FACILITATION_CHARGE"){
+		four = paymentData[i].amount
+		}
+		} 
+
+		this.setState({
+TotalPaidAmount : TotalPaidAmount,
+BKROOM_TAX : BKROOM_TAX,
+BKROOM : BKROOM,
+BKROOM_ROUND_OFF : BKROOM_ROUND_OFF,
+four : four,
+PaymentDate : PaymentDate,
+receiptNumber : receiptNumber,
+PaymentMode : PaymentMode,
+transactionNumber : transactionNumber
+		})
+
 	}
+	
 
 	actionButtonOnClick = (e, complaintNo, label) => {
 		if (label == 'APPROVED') {
@@ -271,69 +446,108 @@ class ApplicationDetails extends Component {
 		}
 		return word + "Rupees Only";
 	};
-
+ 
 	downloadPaymentReceiptFunction = async (e) => {
-		const { transformedComplaint, paymentDetailsForReceipt, downloadPaymentReceipt, userInfo,pdfBankName } = this.props;
-		const { complaint } = transformedComplaint;
-		console.log("stateBankName--",this.state.BankName ? this.state.BankName : "NA")
+		const { transformedComplaint, paymentDetailsForReceipt, downloadPaymentReceipt, userInfo,pdfBankName,downloadRoomPaymentRecipt } = this.props;
 		
+	let Newugst;
+    let perFind = 50;
+    let ugst = this.state.BKROOM_TAX
+    let find50Per = (perFind/100) * ugst
+    console.log("find50Per--",find50Per)		
+    let findNumOrNot = Number.isInteger(find50Per);
+    console.log("findNumOrNot--",findNumOrNot)
+    if(findNumOrNot == true){
+      Newugst = find50Per
+      console.log("trueCondition")
+    }
+    else{
+      Newugst = find50Per.toFixed(2);
+      console.log("second-Newugst-",Newugst)
+    }
+		
+		let approverName;
+		for(let i = 0; i < userInfo.roles.length ; i++ ){
+		  if(userInfo.roles[i].code == "BK_E-SAMPARK-CENTER"){
+			approverName = userInfo.roles[i].name
+		  }
+		}
+
 		var date2 = new Date();
 
 		var generatedDateTime = `${date2.getDate()}-${date2.getMonth() + 1}-${date2.getFullYear()}, ${date2.getHours()}:${date2.getMinutes() < 10 ? "0" : ""}${date2.getMinutes()}`;
 	
 
-		let BookingInfo = [{
-			"applicantDetail": {
-				"name": complaint && complaint.applicantName ? complaint.applicantName : 'NA',
-				"mobileNumber": complaint && complaint.bkMobileNumber ? complaint.bkMobileNumber : '',
-				"houseNo": complaint && complaint.houseNo ? complaint.houseNo : '',
-				"permanentAddress": complaint && complaint.address ? complaint.address : '',
-				"permanentCity": complaint && complaint.villageCity ? complaint.villageCity : '',
-				"sector": complaint && complaint.sector ? complaint.sector : ''
+		let BookingInfo = [
+			{
+				"applicantDetails": {
+					"name": this.state.AllValues[0].bkApplicantName,
+				},
+				"booking": {
+					"bkLocation": this.state.AllValues[0].bkLocation,
+					"bkDept": this.state.AllValues[0].bkBookingType,
+					"noOfAcRooms": this.state.totalACRoom,
+					"noOfNonAcRooms": this.state.totalNonAcRoom,
+					"bookingPurpose": this.state.AllValues[0].bkBookingPurpose,
+					"bkStartDate": this.state.FromDate,
+					"bkEndDate": this.state.ToDate,
+					"placeOfService": "Chandigarh",
+				},
+				"generated": {
+				  "generatedBy": approverName,
+				  "generatedDateTime": generatedDateTime
+			  },
+			  "approvedBy": {
+				"approvedBy": userInfo.name,
+				"role": approverName
 			},
-			"booking": {
-				"bkApplicationNumber": complaint && complaint.applicationNo ? complaint.applicationNo : ''
-			},
-			"paymentInfo": {
-				"paymentDate": paymentDetailsForReceipt && convertEpochToDate(paymentDetailsForReceipt.Payments[0].transactionDate, "dayend"),
-				"transactionId": paymentDetailsForReceipt && paymentDetailsForReceipt.Payments[0].transactionNumber,
-				"bookingPeriod": getDurationDate(
-					complaint.bkFromDate,
-					complaint.bkToDate
+			"emp": {
+			  "OpCode": this.state.operatorCode,
+			  "samparkAdd": this.state.Address,
+		  },
+			  "paymentInfo": {
+				"cleaningCharges": "Not Applicable",
+				"baseCharge": this.state.BKROOM,
+				"cgst": Newugst,
+				"utgst": Newugst,
+				"totalgst":this.state.BKROOM_TAX,
+				"refundableCharges": "",
+				"totalPayment": this.state.TotalPaidAmount,
+				"paymentDate": convertEpochToDate(this.state.PaymentDate, "dayend"),
+				"receiptNo": this.state.receiptNumber,
+				"currentDate":   convertEpochToDate(date2, "dayend"),
+				"paymentType": this.state.PaymentMode,
+				"facilitationCharge": this.state.four,
+				"custGSTN": this.state.AllValues[0].bkCustomerGstNo,
+				"mcGSTN": "aasdadad",
+				"bankName": "",
+				"transactionId":this.state.transactionNumber,
+				"totalPaymentInWords": this.NumInWords(
+					this.state.totalAmountPaid
 				),
-				"bookingItem": "Online Payment Against Booking of Open Space for Building Material",
-				"amount": paymentDetailsForReceipt.Payments[0].paymentDetails[0].bill.billDetails[0].billAccountDetails.filter(
-					(el) => !el.taxHeadCode.includes("PARKING_LOTS_MANUAL_OPEN_SPACE_BOOKING_BRANCH")
-				)[0].amount,
-				"tax": paymentDetailsForReceipt.Payments[0].paymentDetails[0].bill.billDetails[0].billAccountDetails.filter(
-					(el) => el.taxHeadCode.includes("CGST_UTGST_MANUAL_OPEN_SPACE_BOOKING_BRANCH")
-				)[0].amount,
-				"grandTotal": paymentDetailsForReceipt.Payments[0].totalAmountPaid,
-				"amountInWords": this.NumInWords(
-					paymentDetailsForReceipt.Payments[0].totalAmountPaid
-				),
-				paymentItemExtraColumnLabel: "Booking Period",
-				paymentMode:
-					paymentDetailsForReceipt.Payments[0].paymentMode,
-					bankName: pdfBankName !== "NA" ? pdfBankName : this.state.BankName,
-				receiptNo:
-					paymentDetailsForReceipt.Payments[0].paymentDetails[0]
-						.receiptNumber,
-				
+				"discType": this.state.AllValues[0].discount
 			},
-			payerInfo: {
-				payerName: paymentDetailsForReceipt.Payments[0].payerName,
-				payerMobile:
-					paymentDetailsForReceipt.Payments[0].mobileNumber,
-			},
-			"generatedBy": {
-				"generatedBy": userInfo.name,
-				"generatedDateTime":generatedDateTime
+				"tenantInfo": {
+					"municipalityName": "Municipal Corporation Chandigarh",
+					"address": "New Deluxe Building, Sector 17, Chandigarh",
+					"contactNumber": "+91-172-2541002, 0172-2541003",
+					"logoUrl": "https://chstage.blob.core.windows.net/fileshare/logo.png",
+					"webSite": "http://mcchandigarh.gov.in",
+					"mcGSTN": "aasdadad",
+					"statecode": " 04",
+					"hsncode": this.state.hsnCode
+				},
+				"bankInfo": {
+				  "accountholderName": this.state.AllValues[0].bkBankAccountHolder,
+				  "rBankName": this.state.AllValues[0].bkBankName,
+				  "rBankACNo": this.state.AllValues[0].bkBankAccountNumber,
+				  "rIFSCCode": this.state.AllValues[0].bkIfscCode
 			  }
-		}
+			}
 		]
-		downloadPaymentReceipt({ BookingInfo: BookingInfo })
-	}
+		downloadRoomPaymentRecipt({ BookingInfo: BookingInfo })
+			
+		}
 
 	
 	downloadApplicationFunction = async (e) => {
@@ -498,17 +712,17 @@ class ApplicationDetails extends Component {
 		},1500)
 	}
 	
-
+  
 	
 downloadPermissionLetterButton = async (mode) => {
 	await this.downloadPermissionLetterFunction();
 	setTimeout(async()=>{
 	
 		let documentsPreviewData;
-		const { DownloadPermissionLetterDetails,userInfo } = this.props;
+		const { RoomPermissionLetterData,userInfo } = this.props;
 		var documentsPreview = [];
-		if (DownloadPermissionLetterDetails && DownloadPermissionLetterDetails.filestoreIds.length > 0) {
-			 documentsPreviewData=DownloadPermissionLetterDetails.filestoreIds[0];
+		if (RoomPermissionLetterData && RoomPermissionLetterData.filestoreIds.length > 0) {
+			 documentsPreviewData=RoomPermissionLetterData.filestoreIds[0];
 			documentsPreview.push({
 				title: "DOC_DOC_PICTURE",
 				fileStoreId: documentsPreviewData,
@@ -581,88 +795,131 @@ downloadPermissionLetterButton = async (mode) => {
 }
 
 downloadPermissionLetterFunction = async (e) => {
-	const { transformedComplaint,paymentDetails,downloadPermissionLetter ,userInfo} = this.props;
-	const {complaint} = transformedComplaint;
-
-	let approverName;
-	//userInfo.roles
-		if(complaint.bookingType === "OSBM"){
-			for(let i = 0; i < userInfo.roles.length ; i++ ){
-				if(userInfo.roles[i].code == "BK_OSBM_APPROVER"){
-					approverName = userInfo.roles[i].name
-				}
-			}
+	const {selectedComplaint,userInfo,downloadRoomPermissionLetter} = this.props
 	
+	let Newugst;
+    let perFind = 50;
+    let ugst = this.state.BKROOM_TAX
+    let find50Per = (perFind/100) * ugst
+    console.log("find50Per--",find50Per)		
+    let findNumOrNot = Number.isInteger(find50Per);
+    console.log("findNumOrNot--",findNumOrNot)
+    if(findNumOrNot == true){
+      Newugst = find50Per
+      console.log("trueCondition")
+    }
+    else{
+      Newugst = find50Per.toFixed(2);
+      console.log("second-Newugst-",Newugst)
+    }
+		
+		let approverName;
+		for(let i = 0; i < userInfo.roles.length ; i++ ){
+		  if(userInfo.roles[i].code == "BK_E-SAMPARK-CENTER"){
+			approverName = userInfo.roles[i].name
+		  }
 		}
 
-	let receiptData = [
-		{
-			applicantDetail: {
-				name: complaint.applicantName,
-				mobileNumber: complaint.bkMobileNumber,
-				houseNo: complaint.houseNo,
-				permanentAddress: complaint.address,
-				permanentCity: complaint.villageCity,
-				sector: complaint.sector,
-			},
-			bookingDetail: {
-				applicationNumber:
-				complaint.applicationNo,
-				applicationDate: convertEpochToDate(
-					complaint.dateCreated,"dayend"
-				),
-				bookingPeriod: getDurationDate(
-					complaint.bkFromDate,
-					complaint.bkToDate
-				),
-				
-				villageOrCity: complaint.villageCity,
-				residentialOrCommercial: complaint.residentialCommercial,
-				areaRequired: complaint.areaRequired,
-				category: complaint.bkCategory,
-				typeOfConstruction: complaint.bkConstructionType,
-				permissionPeriod: getDurationDate(
-					complaint.bkFromDate,
-					complaint.bkToDate
-				),
+		var date2 = new Date();
 
-				duration:
-				complaint.bkDuration == "1"
-					? `${complaint.bkDuration} Month`
-					: `${complaint.bkDuration} Months`,
-			categoryImage: "",
-				groundName:complaint.sector
-			},
+		var generatedDateTime = `${date2.getDate()}-${date2.getMonth() + 1}-${date2.getFullYear()}, ${date2.getHours()}:${date2.getMinutes() < 10 ? "0" : ""}${date2.getMinutes()}`;
 
-
-
-			approvedBy:{
-				approvedBy: userInfo.name,
-				role: approverName,
-			},
-			tenantInfo:{
-				municipalityName: "Municipal Corporation Chandigarh",
-				address: "New Deluxe Building, Sector 17, Chandigarh",
-				contactNumber: "+91-172-2541002, 0172-2541003",
-				logoUrl: "https://chstage.blob.core.windows.net/fileshare/logo.png",
-				webSite: "http://mcchandigarh.gov.in"
-			},
-			generatedBy: {
-				generatedBy: userInfo.name,
+		let BookingInfo = [
+			{
+				"applicantDetails": {
+					"name":  this.state.AllValues[0].bkApplicantName,
+					"permanentAddress":this.state.AllValues[0].bkSector,
+					"permanentCity": "chandigarh",
+					"placeOfService": "Chandigarh"
+				},
+				"bookingDetails": {
+					"bkLocation": this.state.AllValues[0].bkLocation,
+					"bkDept": this.state.AllValues[0].bkBookingType,
+					"noOfACRooms": this.state.totalACRoom,
+					"noOfNonACRooms": this.state.totalNonAcRoom,
+					"bookingPurpose": this.state.AllValues[0].bkBookingPurpose,
+					"bkStartDate": this.state.FromDate,
+					"bkEndDate": this.state.ToDate,
+					"placeOfService": "Chandigarh",
+	 				"venueName": this.state.AllValues[0].bkLocation,
+					"sector": this.state.AllValues[0].bkSector,
+					"bookingType":this.state.AllValues[0].bkBookingType,
+					"applicationDate":this.state.CreatedDate,
+					"bookingPeriod": getDurationDate(
+						this.state.FromDate,
+						this.state.ToDate
+					),
+				},
+				"generated": {
+					"generatedBy": approverName,
+					"generatedDateTime": generatedDateTime
+				},
+				"approvedBy": {
+				  "approvedBy": userInfo.name,
+				  "role": approverName
+			  },
+				"emp": {
+					"samparkName": this.state.name,
+					"samparkaddress": this.state.Address
+				},
+				"paymentInfo": {
+					"cleaningCharges": "Not Applicable",
+					"baseCharge": this.state.BKROOM,
+					"cgst": Newugst,
+					"utgst": Newugst,
+					"totalgst":this.state.BKROOM_TAX,
+					"refundableCharges": "",
+					"totalPayment": this.state.TotalPaidAmount,
+					"paymentDate": convertEpochToDate(this.state.PaymentDate, "dayend"),
+					"receiptNo": this.state.receiptNumber,
+					"currentDate":   convertEpochToDate(date2, "dayend"),
+					"paymentType": this.state.PaymentMode,
+					"facilitationCharge": this.state.four,
+					"custGSTN": this.state.AllValues[0].bkCustomerGstNo,
+					"mcGSTN": "aasdadad",
+					"bankName": "",
+					"transactionId":this.state.transactionNumber,
+					"totalPaymentInWords": this.NumInWords(
+						this.state.totalAmountPaid
+					),
+					"discType": this.state.AllValues[0].discount
+				},
+				"tenantInfo": {
+					"municipalityName": "Municipal Corporation Chandigarh",
+					"address": "New Deluxe Building, Sector 17, Chandigarh",
+					"contactNumber": "+91-172-2541002, 0172-2541003",
+					"logoUrl": "https://chstage.blob.core.windows.net/fileshare/logo.png",
+					 "webSite": "http://mcchandigarh.gov.in",
+					"mcGSTN": "aasdadad",
+					"statecode": "04",
+					"hsncode": this.props.hsnCode
+				},
+				"bankInfo": {
+					"accountholderName": this.state.AllValues[0].bkBankAccountHolder,
+					"rBankName": this.state.AllValues[0].bkBankName,
+					"rBankACNo": this.state.AllValues[0].bkBankAccountNumber,
+					"rIFSCCode": this.state.AllValues[0].bkIfscCode
+				}
 			}
-		}]
-
-	downloadPermissionLetter({BookingInfo:receiptData})
-}
+		]
+	  
+		downloadRoomPermissionLetter({ BookingInfo: BookingInfo })
+		}
 	
 	downloadPaymentReceiptButton = async (mode) => {
 		this.downloadPaymentReceiptFunction();
 		setTimeout(async()=>{
 		let documentsPreviewData;
-		const { DownloadPaymentReceiptDetails,userInfo } = this.props;
+		const { RoomReceiptData,userInfo,bookings,MyName } = this.props;
+		console.log("PropsInPayementFunction-",this.props)
+		console.log("StaticData--",MyName)
+		let {RoomPaymentReceipt} = bookings
+		console.log("RoomPaymentReceipt-Extract-from-bookings",
+		(RoomPaymentReceipt !== undefined && RoomPaymentReceipt !== null) ? RoomPaymentReceipt : "NotFound")
+		console.log("downloadPaymentReceiptButton--props",bookings.RoomPaymentReceipt,userInfo)
 		var documentsPreview = [];
-		if (DownloadPaymentReceiptDetails && DownloadPaymentReceiptDetails.filestoreIds.length > 0) {	
-		documentsPreviewData = DownloadPaymentReceiptDetails.filestoreIds[0];
+		if (bookings.RoomPaymentReceipt && bookings.RoomPaymentReceipt.filestoreIds.length > 0) {	
+			documentsPreviewData = bookings.RoomPaymentReceipt.filestoreIds[0];
 			documentsPreview.push({
 				title: "DOC_DOC_PICTURE",
 				fileStoreId: documentsPreviewData,
@@ -837,17 +1094,117 @@ downloadPermissionLetterFunction = async (e) => {
 			prepareFinalObject('documentsPreview', documentsPreview)
 		}
 
-
+ 
 
 	}
 
 	render() {
-		console.log("state--inrender",this.state)
-		
+	const {TotalPaidAmount,BKROOM_TAX,BKROOM,BKROOM_ROUND_OFF,four,
+		totalACRoom,totalNonAcRoom,FromDate,ToDate,CreatedDate,ApplicationNumber,discountForRoom
+} = this.state
+console.log("state--inrender",this.state)
+console.log("ValuesState--",this.state.AllValues)
+	// const {totalAmountPaid,BKROOM_TAX,BKROOM,BKROOM_ROUND_OFF,four} = this.props
 		return (
 			<div>
-				<h1>hello</h1>
+         <Screen> 
+		<div>
+	<div className="form-without-button-cont-generic">
+	<div className="container" >
+	<div className="row">						
+	<div className="col-12 col-md-6" style={{ fontSize: 'x-large' }}>
+
+Room Details
+</div>
+	 <div className="col-12 col-md-6 row">
+											<div class="col-12 col-md-6 col-sm-3" >
+												<ActionButtonDropdown data={{
+													label: { labelName: "Download ", labelKey: "BK_COMMON_DOWNLOAD_ACTION" },
+													rightIcon: "arrow_drop_down",
+													leftIcon: "cloud_download",
+													props: {
+														variant: "outlined",
+														style: { marginLeft: 5, marginRight: 15, color: "#FE7A51", height: "60px" }, className: "tl-download-button"
+													},
+													menu:[{
+														label: {
+															labelName: "Receipt",
+															labelKey: "BK_MYBK_DOWNLOAD_RECEIPT"
+														},
+
+														link: () => this.downloadPaymentReceiptButton('Receipt'),
+														leftIcon: "receipt"
+													},
+													{
+														label: {
+															labelName: "PermissionLetter",
+															labelKey: "BK_MYBK_DOWNLOAD_PERMISSION_LETTER"
+														},
+														link: () => this.downloadPermissionLetterButton('PermissionLetter'),
+														leftIcon: "book"
+													}]
+												}} />
+											</div>
+											<div class="col-12 col-md-6 col-sm-3" >
+												<ActionButtonDropdown data={{
+													label: { labelName: "Print", labelKey: "BK_COMMON_PRINT_ACTION" },
+													rightIcon: "arrow_drop_down",
+													leftIcon: "print",
+													props: {
+														variant: "outlined",
+														style: { marginLeft: 5, marginRight: 15, color: "#FE7A51", height: "60px" }, className: "tl-download-button"
+													},
+													menu: [{
+														label: {
+															labelName: "Receipt",
+															labelKey: "BK_MYBK_PRINT_RECEIPT"
+														},
+
+														link: () => this.downloadPaymentReceiptButton('print'),
+														leftIcon: "receipt"
+													},
+													{
+														label: {
+															labelName: "PermissionLetter",
+															labelKey: "BK_MYBK_DOWNLOAD_PERMISSION_LETTER"
+														},
+														 link: () => this.downloadPermissionLetterButton('print'),
+														 leftIcon: "book"
+													}]
+												}} />
+
+											</div>
+										</div>		
+	</div>
+	</div>
+				<PaymentCardForRoom 
+				TotalPaidAmount={TotalPaidAmount}
+				BKROOM_TAX={BKROOM_TAX}
+				BKROOM={BKROOM}
+				BKROOM_ROUND_OFF={BKROOM_ROUND_OFF}
+				four={four}
+				/>  
+
+<CombinedRoomDetail
+totalACRoom = {totalACRoom}
+totalNonAcRoom = {totalNonAcRoom}
+FromDate = {FromDate}
+ToDate = {ToDate}
+CreatedDate = {CreatedDate}
+ApplicationNumber = {ApplicationNumber}
+discountForRoom = {discountForRoom}
+// discount = {this.state.AllValues[0].discount}
+/>
+
+
 			</div>
+										
+			</div>
+			</Screen></div>							
+
+
+				
+
 			// <div>
 			// 	<Screen>
 			// 			<div>
@@ -1064,22 +1421,38 @@ downloadPermissionLetterFunction = async (e) => {
 			// 	</Screen>
 			// </div>
 		);
-	}
-}
+	} 
+} 
 
 const mapStateToProps = (state, ownProps) => {
 	const { bookings, common, auth, form } = state;
 	const { applicationData } = bookings;
+	const { userInfo } = auth;
+	const {RoomPaymentReceipt,RoomPermissionLetter} = bookings
+	console.log("BookingsDataFromRedux--",bookings)
+	let RoomReceiptData = (RoomPaymentReceipt !== undefined && RoomPaymentReceipt !== null) ? RoomPaymentReceipt : ""
+	console.log("RoomReceiptData-",RoomReceiptData)
+	let RoomPermissionLetterData = (RoomPermissionLetter !== undefined && RoomPermissionLetter !== null) ? RoomPermissionLetter : ""
+	console.log("RoomPermissionLetterData-",RoomPermissionLetterData)
+	console.log("RoomPaymentReceipt,RoomPermissionLetter--",RoomPaymentReceipt,RoomPermissionLetter)
 	const { DownloadPaymentReceiptDetails,DownloadApplicationDetails,DownloadPermissionLetterDetails } = bookings;
-	
+	const { fetchPaymentAfterPayment } = bookings;
+	console.log("fetchPaymentAfterPayment--",fetchPaymentAfterPayment ? fetchPaymentAfterPayment : "NofetchPaymentAfterPaymentData")
+	let ReceiptPaymentDetails = fetchPaymentAfterPayment;
+	let MyName = "Vandana"
+
+	return{
+		userInfo,RoomPermissionLetter,RoomPaymentReceipt,RoomReceiptData,RoomPermissionLetterData,bookings,MyName	
+	}
 };
 
 const mapDispatchToProps = dispatch => {
 	return {
-		fetchApplications: criteria => dispatch(fetchApplications(criteria)),
+		fetchApplications: criteria => dispatch(fetchApplications(criteria)), //
+		downloadRoomPermissionLetter: criteria => dispatch(downloadRoomPermissionLetter(criteria)),
 		fetchPayment: criteria => dispatch(fetchPayment(criteria)),
 		fetchDataAfterPayment: criteria => dispatch(fetchDataAfterPayment(criteria)),
-
+		downloadRoomPaymentRecipt : criteria => dispatch(downloadRoomPaymentRecipt(criteria)),
 		downloadPaymentReceipt: criteria => dispatch(downloadPaymentReceipt(criteria)),
 downloadPermissionLetter: criteria => dispatch(downloadPermissionLetter(criteria)),
 		downloadApplication: criteria => dispatch(downloadApplication(criteria)),

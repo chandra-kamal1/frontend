@@ -377,7 +377,7 @@ class CreateWBTApplicationSuccess extends Component {
     { labelName: "BK_ES_APPLICATION_CREATED_SUCCESS_MESSAGE--", labelKey: "BK_ES_APPLICATION_CREATED_SUCCESS_MESSAGE" },
     { labelName: "BK_CS_COMMON_SEND_MESSAGE--", labelKey: "BK_CS_COMMON_SEND_MESSAGE" },
 )
-
+ 
     return (
       <Screen loading={loading}>
       <div className="success-message-main-screen resolve-success">
@@ -399,14 +399,14 @@ class CreateWBTApplicationSuccess extends Component {
             onClick={this.downloadApplicationButton}
             style={{ marginRight: 18 }}
           />
-           <Button
+           {/* <Button
             className="responsive-action-button"
             primary={true}
             label={<Label buttonLabel={true} label="BK_CORE_COMMON_DOWNLOAD" />}
             fullWidth={true}
             onClick={this.downloadPermissionLetter}
             style={{ marginRight: 18 }}
-          />
+          /> */}
           <Button
             id="resolve-success-continue"
             primary={true}

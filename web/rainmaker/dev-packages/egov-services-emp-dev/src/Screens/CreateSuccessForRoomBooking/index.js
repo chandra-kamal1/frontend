@@ -1,7 +1,7 @@
 import React, { Component } from "react";
-import { Button, Icon } from "components";
+import { Button, Icon } from "components"; 
 import Label from "egov-ui-kit/utils/translationNode";
-import SuccessMessageForPCC from "../../modules/SuccessMessageForPCC";
+import SuccessMessageForRoomBooking from "../../modules/SuccessMessageForRoomBooking";
 import { connect } from "react-redux";
 import { createWaterTankerApplication, downloadBWTApplication,fetchDataAfterPayment } from "../../redux/bookings/actions";
 import jp from "jsonpath";
@@ -104,47 +104,53 @@ name: "",
   };
   componentDidMount = async () => {  
 let {userInfo} = this.props
+	let mdmsBody = {
+		MdmsCriteria: {
+			tenantId: userInfo.tenantId,
+			moduleDetails: [
 
-    let mdmsBody = {
-      MdmsCriteria: {
-        tenantId: userInfo.tenantId,
-        moduleDetails: [
-  
-          {
-            moduleName: "Booking",
-            masterDetails: [
-              {
-                name: "E_SAMPARK_BOOKING",
-              }
-            ],
-          },
-  
-        ],
-      },
-    };
-  
-    let payloadRes = null;
-    payloadRes = await httpRequest(
-      "egov-mdms-service/v1/_search",
-      "_search",[],
-      mdmsBody
-    );
-    console.log(payloadRes, "hsncodeAndAll");
-  
-    let samparkDetail = payloadRes.MdmsRes.Booking.E_SAMPARK_BOOKING[0]
+				{
+					moduleName: "Booking",
+					masterDetails: [
+						{
+							name: "E_SAMPARK_BOOKING",
+						}
+					],
+				},
 
-    let operatorCode = samparkDetail.operatorCode
-    let Address = samparkDetail.centreAddres
-    let hsnCode = samparkDetail.hsnCode
-    let name = samparkDetail.name
-    this.setState({
-      operatorCode:operatorCode,
-      Address:Address,  //operatorCode,Address,hsnCode
-      hsnCode:hsnCode,
-      name:name
-    })
-    
+			],
+		},
+	};
 
+	let payloadRes = null;
+	payloadRes = await httpRequest(
+		"egov-mdms-service/v1/_search",
+		"_search",[],
+		mdmsBody
+	);
+	console.log(payloadRes, "hsncodeAndAll");
+
+let samparkDetail = payloadRes.MdmsRes.Booking.E_SAMPARK_BOOKING
+
+let operatorCode;
+let Address;
+let hsnCode;
+let name;
+
+for(let i = 0; i < samparkDetail.length; i++){
+  if(samparkDetail[i].id == userInfo.fatherOrHusbandName){
+	operatorCode = samparkDetail[i].operatorCode
+	hsnCode = samparkDetail[i].hsnCode
+	name = samparkDetail[i].name
+	Address = samparkDetail[i].centreAddres
+	}
+}
+this.setState({
+	operatorCode:operatorCode,
+	Address:Address,  
+	hsnCode:hsnCode,
+	name:name
+})
 
     fetchDataAfterPayment(
 			[{ key: "consumerCodes", value: this.props.AppNum }, { key: "tenantId", value: userInfo.tenantId }
@@ -501,13 +507,13 @@ downloadRoomPermissionLetter({ BookingInfo: BookingInfo })
     { labelName: "BK_ES_APPLICATION_CREATED_SUCCESS_MESSAGE--", labelKey: "BK_ES_APPLICATION_CREATED_SUCCESS_MESSAGE" },
     { labelName: "BK_CS_COMMON_SEND_MESSAGE--", labelKey: "BK_CS_COMMON_SEND_MESSAGE" },
 )
-
+ 
     return (
       <Screen loading={loading}>
       <div className="success-message-main-screen resolve-success">
-      <SuccessMessageForPCC
-         headermessage="BK_MYBK_APPLY_ROOM_BOOKING_COMPLETE"
-          successmessage="BK_MYBK_APPLY_ROOM_BOOKING_COMPLETE"
+      <SuccessMessageForRoomBooking
+         headermessage="BK_MYBK_APPLY_SPECIAL_REQUEST_HEADER"
+          successmessage="BK_ES_APPLICATION_CREATED_SUCCESS_MESSAGE"
           secondaryLabel="BK_CS_COMMON_SEND_MESSAGE"
           containerStyle={{ display: "inline-block" }} 
           icon={<Icon action="navigation" name="check" />}
@@ -518,7 +524,7 @@ downloadRoomPermissionLetter({ BookingInfo: BookingInfo })
           <Button
             className="responsive-action-button"
             primary={true}
-            label={<Label buttonLabel={true} label="BK_CORE_COMMON_DOWNLOAD" />}
+            label={<Label buttonLabel={true} label="BK_CORE_ROOM_DOWNLOAD_PAYMENT_BUTTON" />}
             fullWidth={true}
             onClick={this.downloadPaymentReceipt}
             style={{ marginRight: 18 }}
@@ -526,7 +532,7 @@ downloadRoomPermissionLetter({ BookingInfo: BookingInfo })
           <Button
             className="responsive-action-button"
             primary={true}
-            label={<Label buttonLabel={true} label="BK_CORE_COMMON_DOWNLOAD" />}
+            label={<Label buttonLabel={true} label="BK_CORE_ROOM_DOWNLOAD_PERMISSION_LETTER_BUTTON" />}
             fullWidth={true}
             onClick={this.downloadPermissionLetter}
             style={{ marginRight: 18 }}
