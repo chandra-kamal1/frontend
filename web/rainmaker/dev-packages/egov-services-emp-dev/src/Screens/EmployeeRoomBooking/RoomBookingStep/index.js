@@ -210,65 +210,6 @@ class ApplicatInfo extends Component {
         
         </div>
         
-        <div className="col-sm-6 col-xs-6">
-          <TextField
-            id="mobile-no"
-            name="mobile-no"
-            type="text"
-            value={this.props.RoomBookingData.bookedAcRooms}
-            required = {true}
-            hintText={
-              <Label
-                label="BK_MYBK_CC_ROOM_BOOK_AC_ROOM"
-                color="rgba(0, 0, 0, 0.3799999952316284)"
-                fontSize={16}
-                labelStyle={hintTextStyle}
-              />
-            }
-            floatingLabelText={
-              <Label
-                key={0}
-                label="BK_MYBK_CC_ROOM_BOOK_AC_ROOM"
-                color="rgba(0,0,0,0.60)"
-                fontSize="12px"
-              />
-            }
-            onChange={handleChange('mobileNo')}
-            underlineStyle={{ bottom: 7 }}
-            underlineFocusStyle={{ bottom: 7 }}
-            hintStyle={{ width: "100%" }}
-          />     
-        </div>    
-
-        <div className="col-sm-6 col-xs-6">
-            <TextField
-              id="houseNo"
-              name="houseNo"
-              type="text"
-              value={this.props.RoomBookingData.bookedNonAcRooms}
-              required = {true}
-              hintText={
-                <Label
-                  label="BK_MYBK_CC_ROOM_BOOK_NON_AC_ROOM"
-                  color="rgba(0, 0, 0, 0.3799999952316284)"
-                  fontSize={16}
-                  labelStyle={hintTextStyle}
-                />
-              }
-              floatingLabelText={
-                <Label
-                  key={0}
-                  label="BK_MYBK_CC_ROOM_BOOK_NON_AC_ROOM"
-                  color="rgba(0,0,0,0.60)"
-                  fontSize="12px"
-                />
-              }
-              onChange={handleChange('houseNo')}
-              underlineStyle={{ bottom: 7 }}
-              underlineFocusStyle={{ bottom: 7 }}
-              hintStyle={{ width: "100%" }}
-            />
-          </div>
 
           <div className="col-sm-6 col-xs-6">
             <TextField
@@ -329,6 +270,65 @@ class ApplicatInfo extends Component {
             />
           </div>
 
+          <div className="col-sm-6 col-xs-6">
+          <TextField
+            id="mobile-no"
+            name="mobile-no"
+            type="text"
+            value={this.props.RoomBookingData.bookedAcRooms}
+            required = {true}
+            hintText={
+              <Label
+                label="BK_MYBK_CC_ROOM_BOOK_AC_ROOM"
+                color="rgba(0, 0, 0, 0.3799999952316284)"
+                fontSize={16}
+                labelStyle={hintTextStyle}
+              />
+            }
+            floatingLabelText={
+              <Label
+                key={0}
+                label="BK_MYBK_CC_ROOM_BOOK_AC_ROOM"
+                color="rgba(0,0,0,0.60)"
+                fontSize="12px"
+              />
+            }
+            onChange={handleChange('mobileNo')}
+            underlineStyle={{ bottom: 7 }}
+            underlineFocusStyle={{ bottom: 7 }}
+            hintStyle={{ width: "100%" }}
+          />     
+        </div>    
+
+        <div className="col-sm-6 col-xs-6">
+            <TextField
+              id="houseNo"
+              name="houseNo"
+              type="text"
+              value={this.props.RoomBookingData.bookedNonAcRooms}
+              required = {true}
+              hintText={
+                <Label
+                  label="BK_MYBK_CC_ROOM_BOOK_NON_AC_ROOM"
+                  color="rgba(0, 0, 0, 0.3799999952316284)"
+                  fontSize={16}
+                  labelStyle={hintTextStyle}
+                />
+              }
+              floatingLabelText={
+                <Label
+                  key={0}
+                  label="BK_MYBK_CC_ROOM_BOOK_NON_AC_ROOM"
+                  color="rgba(0,0,0,0.60)"
+                  fontSize="12px"
+                />
+              }
+              onChange={handleChange('houseNo')}
+              underlineStyle={{ bottom: 7 }}
+              underlineFocusStyle={{ bottom: 7 }}
+              hintStyle={{ width: "100%" }}
+            />
+          </div>
 
           <div className="col-sm-6 col-xs-6">
             <FormControl style={{ width: '100%' }}>
@@ -382,8 +382,26 @@ class ApplicatInfo extends Component {
        Both
       </label> */}
     {this.props.TypeOfRoomToBook === 'AC' ? 
-      <div className="col-sm-6 col-xs-6">       
-      <TextField
+      <div className="col-sm-6 col-xs-6"> 
+
+      <Select
+        maxWidth={false}
+        required={true}
+        labelId="demo-controlled-open-select-label"
+        id="demo-controlled-open-select"
+        open={this.state.SetOpen}
+        displayEmpty
+        onClose={() => this.handleClose()}
+        onOpen={() => this.handleOpen()}
+        value={this.props.AccRoomToBook}
+        onChange={handleChange('AccRoomToBook')}
+      >
+        <MenuItem value="0" disabled>0</MenuItem>
+        {[...Array(this.props.availableAcRooms)].map((e, i) => {
+    return <MenuItem value={i} disabled>{i}</MenuItem>
+        })}
+      </Select>      
+      {/* <TextField
         id="name"
         name="name"
         type="text"
@@ -410,13 +428,31 @@ class ApplicatInfo extends Component {
         underlineStyle={{ bottom: 7 }}
         underlineFocusStyle={{ bottom: 7 }}
         hintStyle={{ width: "100%" }}
-      />
+      /> */}
     </div>
     : ""}
         
     {this.props.TypeOfRoomToBook === 'NON-AC' ? 
-     <div className="col-sm-6 col-xs-6">       
-     <TextField
+     <div className="col-sm-6 col-xs-6">
+        <Select
+        maxWidth={false}
+        required={true}
+        labelId="demo-controlled-open-select-label"
+        id="demo-controlled-open-select"
+        open={this.state.SetOpen}
+        displayEmpty
+        onClose={() => this.handleClose()}
+        onOpen={() => this.handleOpen()}
+        value={this.props.NonAccRoomToBook}
+        onChange={handleChange('NonAccRoomToBook')}
+      >
+        <MenuItem value="0" disabled>0</MenuItem>
+        {[...Array(this.props.availableNonAcRooms)].map((e, i) => {
+    return <MenuItem value={i} disabled>{i}</MenuItem>
+        })}
+      </Select>    
+
+     {/* <TextField
        id="name"
        name="name"
        type="text"
@@ -443,14 +479,31 @@ class ApplicatInfo extends Component {
        underlineStyle={{ bottom: 7 }}
        underlineFocusStyle={{ bottom: 7 }}
        hintStyle={{ width: "100%" }}
-     />
+     /> */}
    </div>
     : ""}
-       
        {this.props.TypeOfRoomToBook === 'Both' ? 
        <div>
-         <div className="col-sm-6 col-xs-6">       
-         <TextField
+         <div className="col-sm-6 col-xs-6">  
+         <Select
+        maxWidth={false}
+        required={true}
+        labelId="demo-controlled-open-select-label"
+        id="demo-controlled-open-select"
+        open={this.state.SetOpen}
+        displayEmpty
+        onClose={() => this.handleClose()}
+        onOpen={() => this.handleOpen()}
+        value={this.props.AccRoomToBook}
+        onChange={handleChange('AccRoomToBook')}
+      >
+        <MenuItem value="0" disabled>0</MenuItem>
+        {[...Array(this.props.availableAcRooms)].map((e, i) => {
+    return <MenuItem value={i} disabled>{i}</MenuItem>
+        })}
+      </Select>    
+
+         {/* <TextField
            id="name"
            name="name"
            type="text"
@@ -477,10 +530,27 @@ class ApplicatInfo extends Component {
            underlineStyle={{ bottom: 7 }}
            underlineFocusStyle={{ bottom: 7 }}
            hintStyle={{ width: "100%" }}
-         />
+         /> */}
        </div>
          <div className="col-sm-6 col-xs-6">       
-         <TextField
+         <Select
+        maxWidth={false}
+        required={true}
+        labelId="demo-controlled-open-select-label"
+        id="demo-controlled-open-select"
+        open={this.state.SetOpen}
+        displayEmpty
+        onClose={() => this.handleClose()}
+        onOpen={() => this.handleOpen()}
+        value={this.props.NonAccRoomToBook}
+        onChange={handleChange('NonAccRoomToBook')}
+      >
+        <MenuItem value="0" disabled>0</MenuItem>
+        {[...Array(this.props.availableNonAcRooms)].map((e, i) => {
+    return <MenuItem value={i} disabled>{i}</MenuItem>
+        })}
+      </Select>    
+         {/* <TextField
            id="name"
            name="name"
            type="text"
@@ -507,12 +577,40 @@ class ApplicatInfo extends Component {
            underlineStyle={{ bottom: 7 }}
            underlineFocusStyle={{ bottom: 7 }}
            hintStyle={{ width: "100%" }}
-         />
+         /> */}
        </div>
 </div>
        : ""}
 
+
 <div className="col-sm-6 col-xs-6">
+            <FormControl style={{ width: '100%' }}>
+              <InputLabel shrink style={{ width: '100%' }} id="demo-controlled-open-select-label"><Label
+                required={true}
+                label="Select Booking Dates"
+              /></InputLabel>
+              <Select
+                maxWidth={false}
+                required={true}
+                labelId="demo-controlled-open-select-label"
+                id="demo-controlled-open-select"
+                open={this.state.SetOpen}
+                displayEmpty
+                onClose={() => this.handleClose()}
+                onOpen={() => this.handleOpen()}
+                value={this.props.TypeOfRoomToBook}
+                onChange={handleChange('SelectBookingDates')}
+              >
+                <MenuItem value="" disabled>Select Booking Dates</MenuItem>
+                <MenuItem value='fromDate'>Book For {this.props.fromDate}</MenuItem>
+                <MenuItem value='toDate'>Book For {this.props.toDate}</MenuItem>
+                <MenuItem value='Both'>Book For {this.props.fromDate} and {this.props.toDate}</MenuItem>
+              </Select>
+            </FormControl>
+          </div>
+
+
+{/* <div className="col-sm-6 col-xs-6">
             <FormControl style={{ width: '100%' }}>
               <InputLabel shrink style={{ width: '100%' }} id="demo-controlled-open-select-label"><Label
                 required={true}
@@ -560,7 +658,7 @@ class ApplicatInfo extends Component {
                 <MenuItem value={this.props.toDate}>{this.props.toDate}</MenuItem>
               </Select>
             </FormControl>
-          </div>
+          </div> */}
 
   <Footer className="apply-wizard-footer" style={{ display: 'flex', justifyContent: 'flex-end' }} children={
             <div className="col-sm-12 col-xs-12" style={{ textAlign: 'right' }}>
