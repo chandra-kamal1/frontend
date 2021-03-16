@@ -383,7 +383,12 @@ class ApplicatInfo extends Component {
       </label> */}
     {this.props.TypeOfRoomToBook === 'AC' ? 
       <div className="col-sm-6 col-xs-6"> 
-
+<FormControl style={{ width: '100%' }}>
+              <InputLabel shrink style={{ width: '100%' }} id="demo-controlled-open-select-label"><Label
+                required={true}
+                label="BK_MYBK_NO_ACC_ROOM_TO_BOOK"
+              /></InputLabel>
+            
       <Select
         maxWidth={false}
         required={true}
@@ -400,7 +405,9 @@ class ApplicatInfo extends Component {
         {[...Array(this.props.availableAcRooms)].map((e, i) => {
     return <MenuItem value={i} disabled>{i}</MenuItem>
         })}
-      </Select>      
+      </Select> 
+      </FormControl>
+           
       {/* <TextField
         id="name"
         name="name"
@@ -434,6 +441,13 @@ class ApplicatInfo extends Component {
         
     {this.props.TypeOfRoomToBook === 'NON-AC' ? 
      <div className="col-sm-6 col-xs-6">
+       <FormControl style={{ width: '100%' }}>
+              <InputLabel shrink style={{ width: '100%' }} id="demo-controlled-open-select-label"><Label
+                required={true}
+                label="BK_MYBK_NO_NON_ACC_ROOM_TO_BOOK"
+              /></InputLabel>
+            
+
         <Select
         maxWidth={false}
         required={true}
@@ -451,7 +465,7 @@ class ApplicatInfo extends Component {
     return <MenuItem value={i} disabled>{i}</MenuItem>
         })}
       </Select>    
-
+</FormControl>
      {/* <TextField
        id="name"
        name="name"
@@ -485,6 +499,13 @@ class ApplicatInfo extends Component {
        {this.props.TypeOfRoomToBook === 'Both' ? 
        <div>
          <div className="col-sm-6 col-xs-6">  
+         <FormControl style={{ width: '100%' }}>
+              <InputLabel shrink style={{ width: '100%' }} id="demo-controlled-open-select-label"><Label
+                required={true}
+                label="BK_MYBK_NO_ACC_ROOM_TO_BOOK"
+              /></InputLabel>
+            
+
          <Select
         maxWidth={false}
         required={true}
@@ -502,7 +523,7 @@ class ApplicatInfo extends Component {
     return <MenuItem value={i} disabled>{i}</MenuItem>
         })}
       </Select>    
-
+</FormControl>
          {/* <TextField
            id="name"
            name="name"
@@ -532,7 +553,14 @@ class ApplicatInfo extends Component {
            hintStyle={{ width: "100%" }}
          /> */}
        </div>
-         <div className="col-sm-6 col-xs-6">       
+         <div className="col-sm-6 col-xs-6">   
+         <FormControl style={{ width: '100%' }}>
+              <InputLabel shrink style={{ width: '100%' }} id="demo-controlled-open-select-label"><Label
+                required={true}
+                label="BK_MYBK_NO_NON_ACC_ROOM_TO_BOOK"
+              /></InputLabel>
+            
+    
          <Select
         maxWidth={false}
         required={true}
@@ -550,6 +578,7 @@ class ApplicatInfo extends Component {
     return <MenuItem value={i} disabled>{i}</MenuItem>
         })}
       </Select>    
+      </FormControl>
          {/* <TextField
            id="name"
            name="name"
