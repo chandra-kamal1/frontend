@@ -136,6 +136,9 @@ class ApplicatInfo extends Component {
 
   render() {
     const { firstName, email, mobileNo, lastName,houseNo, handleChange,discountType,handleChangeDiscount,classes,prepareFinalObject} = this.props;
+   
+   console.log("this.props",this.props);
+   console.log("this.props.RoomBookingData.availableAcRooms",this.props.RoomBookingData.availableAcRooms);
     const hintTextStyle = {
       letterSpacing: "0.7px",
       textOverflow: "ellipsis",
@@ -401,9 +404,8 @@ class ApplicatInfo extends Component {
         value={this.props.AccRoomToBook}
         onChange={handleChange('AccRoomToBook')}
       >
-        <MenuItem value="0" disabled>0</MenuItem>
-        {[...Array(this.props.availableAcRooms)].map((e, i) => {
-    return <MenuItem value={i} disabled>{i}</MenuItem>
+              {[...Array(parseInt(this.props.RoomBookingData.availableAcRooms)==0 ? parseInt(this.props.RoomBookingData.availableAcRooms) :parseInt(this.props.RoomBookingData.availableAcRooms) +1)].map((e, i) => {
+    return <MenuItem value={i}>{i}</MenuItem>
         })}
       </Select> 
       </FormControl>
@@ -460,9 +462,8 @@ class ApplicatInfo extends Component {
         value={this.props.NonAccRoomToBook}
         onChange={handleChange('NonAccRoomToBook')}
       >
-        <MenuItem value="0" disabled>0</MenuItem>
-        {[...Array(this.props.availableNonAcRooms)].map((e, i) => {
-    return <MenuItem value={i} disabled>{i}</MenuItem>
+        {[...Array(parseInt(this.props.RoomBookingData.availableNonAcRooms)==0 ? parseInt(this.props.RoomBookingData.availableNonAcRooms) :parseInt(this.props.RoomBookingData.availableNonAcRooms) +1)].map((e, i) => {
+    return <MenuItem value={i}>{i}</MenuItem>
         })}
       </Select>    
 </FormControl>
@@ -518,9 +519,8 @@ class ApplicatInfo extends Component {
         value={this.props.AccRoomToBook}
         onChange={handleChange('AccRoomToBook')}
       >
-        <MenuItem value="0" disabled>0</MenuItem>
-        {[...Array(this.props.availableAcRooms)].map((e, i) => {
-    return <MenuItem value={i} disabled>{i}</MenuItem>
+        {[...Array(parseInt(this.props.RoomBookingData.availableAcRooms)==0 ? parseInt(this.props.RoomBookingData.availableAcRooms) :parseInt(this.props.RoomBookingData.availableAcRooms) +1)].map((e, i) => {
+    return <MenuItem value={i}>{i}</MenuItem>
         })}
       </Select>    
 </FormControl>
@@ -573,9 +573,8 @@ class ApplicatInfo extends Component {
         value={this.props.NonAccRoomToBook}
         onChange={handleChange('NonAccRoomToBook')}
       >
-        <MenuItem value="0" disabled>0</MenuItem>
-        {[...Array(this.props.availableNonAcRooms)].map((e, i) => {
-    return <MenuItem value={i} disabled>{i}</MenuItem>
+        {[...Array(parseInt(this.props.RoomBookingData.availableNonAcRooms)==0 ? parseInt(this.props.RoomBookingData.availableNonAcRooms) :parseInt(this.props.RoomBookingData.availableNonAcRooms) +1)].map((e, i) => {
+    return <MenuItem value={i}>{i}</MenuItem>
         })}
       </Select>    
       </FormControl>
@@ -627,13 +626,13 @@ class ApplicatInfo extends Component {
                 displayEmpty
                 onClose={() => this.handleClose()}
                 onOpen={() => this.handleOpen()}
-                value={this.props.TypeOfRoomToBook}
+                value={this.props.roomFromDate + "#" + this.props.roomToDate}
                 onChange={handleChange('SelectBookingDates')}
               >
-                <MenuItem value="" disabled>Select Booking Dates</MenuItem>
-                <MenuItem value='fromDate'>Book For {this.props.fromDate}</MenuItem>
-                <MenuItem value='toDate'>Book For {this.props.toDate}</MenuItem>
-                <MenuItem value='Both'>Book For {this.props.fromDate} and {this.props.toDate}</MenuItem>
+                <MenuItem value="#" disabled>Select Booking Dates</MenuItem>
+                <MenuItem value={this.props.fromDate + "#" + this.props.fromDate}>Book For {this.props.fromDate}</MenuItem>
+                <MenuItem value={this.props.toDate + "#" + this.props.toDate}>Book For {this.props.toDate}</MenuItem>
+                <MenuItem value={this.props.fromDate + "#" + this.props.toDate}>Book For {this.props.fromDate} and {this.props.toDate}</MenuItem>
               </Select>
             </FormControl>
           </div>
