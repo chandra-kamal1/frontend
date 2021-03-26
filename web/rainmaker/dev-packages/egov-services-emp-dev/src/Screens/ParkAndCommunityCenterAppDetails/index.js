@@ -80,7 +80,7 @@ class ApplicationDetails extends Component {
 			open: false,
 			setOpen: false,
 			togglepopup: false,
-			dateVenchangePop:false,
+			dateVenchangePop: false,
 			actionOnApplication: '',
 			actionTittle: '',
 			actionOpen: false,
@@ -96,14 +96,14 @@ class ApplicationDetails extends Component {
 			checkGreaterDate: '',
 			checkNumDays: '',
 			createdDate: '',
-			stateCode :"" ,
-			placeOfService : "",
-			 mcGSTN : "",
-			 isDiscount:false,
-			 proofOfResDocumentType: '',
-			 proofOfResDocName: '',
-			 discountDocName: '',
-			 allDocumentList: []
+			stateCode: "",
+			placeOfService: "",
+			mcGSTN: "",
+			isDiscount: false,
+			proofOfResDocumentType: '',
+			proofOfResDocName: '',
+			discountDocName: '',
+			allDocumentList: []
 		};
 	};
 
@@ -190,42 +190,42 @@ class ApplicationDetails extends Component {
 		let payloadResTwo = null;
 		payloadResTwo = await httpRequest(
 			"egov-mdms-service/v1/_search",
-			"_search",[],
+			"_search", [],
 			mdmsBodyTwo
 		);
 		console.log(payloadResTwo, "MCGSTnumberDetail");
 
-	let pdfDetails = payloadResTwo.MdmsRes.Booking.PDF_BOOKING_DETAILS
-	console.log("pdfDetails-",pdfDetails)   //stateCode  placeOfService  mcGSTN
+		let pdfDetails = payloadResTwo.MdmsRes.Booking.PDF_BOOKING_DETAILS
+		console.log("pdfDetails-", pdfDetails)   //stateCode  placeOfService  mcGSTN
 
-this.setState({
-	stateCode : pdfDetails[0].stateCode,
-	placeOfService : pdfDetails[0].placeOfService,
-	mcGSTN : pdfDetails[0].mcGSTN
-},console.log("thisStatestateCode",this.state.stateCode,this.state.placeOfService,this.state.mcGSTN))
+		this.setState({
+			stateCode: pdfDetails[0].stateCode,
+			placeOfService: pdfDetails[0].placeOfService,
+			mcGSTN: pdfDetails[0].mcGSTN
+		}, console.log("thisStatestateCode", this.state.stateCode, this.state.placeOfService, this.state.mcGSTN))
 
 
-let samparkDetail = payloadRes.MdmsRes.Booking.E_SAMPARK_BOOKING
+		let samparkDetail = payloadRes.MdmsRes.Booking.E_SAMPARK_BOOKING
 
-let operatorCode;
-let Address;
-let hsnCode;
-let name;
+		let operatorCode;
+		let Address;
+		let hsnCode;
+		let name;
 
-for(let i = 0; i < samparkDetail.length; i++){
-  if(samparkDetail[i].id == userInfo.fatherOrHusbandName){
-  operatorCode = samparkDetail[i].operatorCode
-  hsnCode = samparkDetail[i].hsnCode
-  name = samparkDetail[i].name
-  Address = samparkDetail[i].centreAddres
-  }
-}
-this.setState({
-  operatorCode:operatorCode,
-  Address:Address,
-  hsnCode:hsnCode,
-  name:name
-})
+		for (let i = 0; i < samparkDetail.length; i++) {
+			if (samparkDetail[i].id == userInfo.fatherOrHusbandName) {
+				operatorCode = samparkDetail[i].operatorCode
+				hsnCode = samparkDetail[i].hsnCode
+				name = samparkDetail[i].name
+				Address = samparkDetail[i].centreAddres
+			}
+		}
+		this.setState({
+			operatorCode: operatorCode,
+			Address: Address,
+			hsnCode: hsnCode,
+			name: name
+		})
 
 
 		let FromDate = selectedComplaint.bkFromDate
@@ -255,17 +255,25 @@ this.setState({
 		let isDiscount = dataforSectorAndCategory && dataforSectorAndCategory.bookingsModelList ? dataforSectorAndCategory.bookingsModelList[0].bkPlotSketch : "Genral";
 		let allDocumentList = dataforSectorAndCategory && dataforSectorAndCategory.bookingsModelList ? dataforSectorAndCategory.documentList : [];
 		//General
-		if(isDiscount != "General"){
-			this.setState({isDiscount: true});
+		if (isDiscount != "General") {
+			this.setState({ isDiscount: true });
 		}
-		let proofOfResDocs
-		if(allDocumentList && allDocumentList.length > 0){
-			 proofOfResDocs = allDocumentList.filter( (item) => {
+		let proofOfResDocs;
+		let proofOfDiscount;
+		if (allDocumentList && allDocumentList.length > 0) {
+			proofOfResDocs = allDocumentList.filter((item) => {
 				return item.documentType != "BK_PCC_DISCOUNT_DOCUMENT";
 			})
-			this.setState({proofOfResDocName: proofOfResDocs[0].fileName,
+			if (isDiscount != "General") {
+				proofOfDiscount = allDocumentList.filter((item) => {
+					return item.documentType == "BK_PCC_DISCOUNT_DOCUMENT";
+				})
+			}
+			this.setState({
+				proofOfResDocName: proofOfResDocs[0].fileName,
 				proofOfResDocumentType: proofOfResDocs[0].documentType,
-				allDocumentList: allDocumentList
+				allDocumentList: allDocumentList,
+				discountDocName: isDiscount != "General" ? proofOfDiscount[0].fileName : ""
 			})
 		}
 		console.log("nero proofOfResDocs", proofOfResDocs, "----", allDocumentList)
@@ -547,10 +555,10 @@ this.setState({
 						}
 					}
 
-					if(roomBookingAmount > 0){
+					if (roomBookingAmount > 0) {
 						bookingAmount += roomBookingAmount;
 					}
-console.log(bookingAmount, bookingNosString, "Nero Booking Amount")
+					console.log(bookingAmount, bookingNosString, "Nero Booking Amount")
 					let mdmsBody = {
 						MdmsCriteria: {
 							tenantId: tenantId,
@@ -755,18 +763,18 @@ console.log(bookingAmount, bookingNosString, "Nero Booking Amount")
 		this.props.history.push(`/egov-services/application-cancelled-success`);
 	}
 
-	testpopup = () =>{
+	testpopup = () => {
 		this.setState({
-			dateVenchangePop :false
+			dateVenchangePop: false
 		})
 	}
 
-	redirectToAvailPage =()=>{
+	redirectToAvailPage = () => {
 		console.log("Come in redirectToAvailPage")
 		return (
-		<div>
-		<h5 style={{marginBottom: "4%"}}>By changing date/venue, the booked rooms will be cancelled</h5>
-		{/* <Button
+			<div>
+				<h5 style={{ marginBottom: "4%" }}>By changing date/venue, the booked rooms will be cancelled</h5>
+				{/* <Button
             className="responsive-action-button"
             label={<Label
 				buttonLabel={true}
@@ -779,26 +787,27 @@ console.log(bookingAmount, bookingNosString, "Nero Booking Amount")
             onClick={() => this.continue()
             } /> */}
 
-		<Button
-		label={
-			<Label
-				buttonLabel={true}
-				label="CONFIRM AND GO"
-			/>
-		}
-		primary={true}
-		labelStyle={{
-			letterSpacing: 0.7,
-			padding: 0,
-			// color: "#fe7a51"
-		}}
-		// buttonStyle={{ border: "1px solid #fe7a51" }}
-		style={{ width: "28%" }}
-		onClick={() => this.continue()}
+				<Button
+					label={
+						<Label
+							buttonLabel={true}
+							label="CONFIRM AND GO"
+						/>
+					}
+					primary={true}
+					labelStyle={{
+						letterSpacing: 0.7,
+						padding: 0,
+						// color: "#fe7a51"
+					}}
+					// buttonStyle={{ border: "1px solid #fe7a51" }}
+					style={{ width: "28%" }}
+					onClick={() => this.continue()}
 
-	/>
-	</div>
-	)}
+				/>
+			</div>
+		)
+	}
 
 	//actionButtonOnClick = (e, complaintNo, label)
 	actionButtonOnClick = async (e, complaintNo, label) => {
@@ -951,10 +960,10 @@ console.log(bookingAmount, bookingNosString, "Nero Booking Amount")
 
 	downloadPaymentReceiptFunction = async (e) => {
 		const { transformedComplaint, paymentDetailsForReceipt, paymentDetails, offlineTransactionDate, offlinePayementMode, offlineTransactionNum,
-			six, one, recNumber, downloadReceiptForPCC, userInfo, selectedComplaint, downloadEsampPaymentReceipt, PACC, LUXURY_TAX, REFUNDABLE_SECURITY, PACC_TAX, PACC_ROUND_OFF, FACILITATION_CHARGE,amountTodisplay } = this.props;
-	console.log("pcccpaymentreceipt",this.props)
-	let NumAmount = 0;
-	NumAmount = Number(amountTodisplay)
+			six, one, recNumber, downloadReceiptForPCC, userInfo, selectedComplaint, downloadEsampPaymentReceipt, PACC, LUXURY_TAX, REFUNDABLE_SECURITY, PACC_TAX, PACC_ROUND_OFF, FACILITATION_CHARGE, amountTodisplay } = this.props;
+		console.log("pcccpaymentreceipt", this.props)
+		let NumAmount = 0;
+		NumAmount = Number(amountTodisplay)
 		const { complaint } = transformedComplaint;  //amountTodisplay
 
 		let applicationDetails = selectedComplaint
@@ -1048,7 +1057,7 @@ console.log(bookingAmount, bookingNosString, "Nero Booking Amount")
 					),  //offlineTransactionDate,,
 					"bankName": "",
 					"cardNumberLast4": "Not Applicable",
-					"dateVenueChangeCharges": this.props.DATEVENUECHARGE == 0 ?"Not Applicable":this.props.DATEVENUECHARGE,
+					"dateVenueChangeCharges": this.props.DATEVENUECHARGE == 0 ? "Not Applicable" : this.props.DATEVENUECHARGE,
 				},
 				"OtherDetails": {
 					"clchargeforwest": applicationDetails.bkCleansingCharges,
@@ -1368,7 +1377,7 @@ console.log(bookingAmount, bookingNosString, "Nero Booking Amount")
 					"paymentDate": convertEpochToDate(this.props.offlineTransactionDate, "dayend"),
 					"receiptNo": this.props.recNumber,
 					"cardNumberLast4": "Not Applicable",
-					"dateVenueChangeCharges": this.props.DATEVENUECHARGE == 0 ?"Not Applicable":this.props.DATEVENUECHARGE,
+					"dateVenueChangeCharges": this.props.DATEVENUECHARGE == 0 ? "Not Applicable" : this.props.DATEVENUECHARGE,
 				},
 				"OtherDetails": {
 					"clchargeforwest": applicationDetails.bkCleansingCharges,
@@ -1474,16 +1483,21 @@ console.log(bookingAmount, bookingNosString, "Nero Booking Amount")
 		}, 1500)
 	}
 
-	callApiForDocumentData = async (e) => {
+	callApiForDocumentData = async (e, residentProof) => {
 		const { documentMap, userInfo } = this.props;
 		let allDocumentList = this.state && this.state.allDocumentList;
 		let proofOfResDocs;
-		if(allDocumentList && allDocumentList.length > 0){
-			proofOfResDocs = allDocumentList.filter( (item) => {
-			   return item.documentType != "BK_PCC_DISCOUNT_DOCUMENT";
-		   })
+		if (allDocumentList && allDocumentList.length > 0) {
+			proofOfResDocs = allDocumentList.filter((item) => {
+				if (residentProof === 'RESIDENCEPROOF') {
+					return item.documentType != "BK_PCC_DISCOUNT_DOCUMENT";
+				} else {
+					return item.documentType == "BK_PCC_DISCOUNT_DOCUMENT";
+				}
 
-	   }
+			})
+
+		}
 		var documentsPreview = [];
 		if (proofOfResDocs && proofOfResDocs.length > 0) {
 
@@ -1584,7 +1598,7 @@ console.log(bookingAmount, bookingNosString, "Nero Booking Amount")
 
 
 	continue = () => {
-console.log("InContinue Function")
+		console.log("InContinue Function")
 		let { selectedComplaint, toggleSnackbarAndSetText } = this.props;
 
 		let bookingDate = selectedComplaint.bkFromDate
@@ -1624,15 +1638,15 @@ console.log("InContinue Function")
 
 	setPop = (booking) => {
 		//complaint.bookingType == "Community Center"   bookingType
-   if(booking.bookingType == "Community Center" && booking.roomsModel.length > 0){
-	   this.setState({
-		   dateVenchangePop: true
-	   })
-   }
-   else{
-   this.continue()
-   }
-   }
+		if (booking.bookingType == "Community Center" && booking.roomsModel.length > 0) {
+			this.setState({
+				dateVenchangePop: true
+			})
+		}
+		else {
+			this.continue()
+		}
+	}
 
 	ApplyOfflineSecurityRefund = async () => {
 
@@ -1825,7 +1839,7 @@ console.log("InContinue Function")
 		let { operatorCode, Address, hsnCode, comments, openMap, AppName, name, checkNumDays, checkGreaterDate, createdDate, BKROOM_TAX, BKROOM, BKROOM_ROUND_OFF, four, totalAmountPaid, PaymentDate, receiptNumber, PaymentMode, transactionNumber } = this.state;
 		console.log("CheckstateForRefund--", this.state)
 		let { complaint, timeLine } = this.props.transformedComplaint;
-		let { documentMap, selectedComplaint, Difference_In_Days_check, first,uploadeDocType } = this.props;
+		let { documentMap, selectedComplaint, Difference_In_Days_check, first, uploadeDocType } = this.props;
 		let { historyApiData, paymentDetails, match, userInfo, paymentDetailsForReceipt, PayMentTwo, PayMentOne, selectedNumber } = this.props;
 		console.log("this.props.match--", this.props)
 		console.log("this.state.totalRefundAmount", this.state.totalRefundAmount)
@@ -1836,18 +1850,18 @@ console.log("InContinue Function")
 			isAssignedToEmployee,
 			reopenValidChecker
 		} = this.props;
-let checkuploadeDocType = "NotFound"
-let valueForDocDropDown;
+		let checkuploadeDocType = "NotFound"
+		let valueForDocDropDown;
 
-checkuploadeDocType = uploadeDocType !== undefined && uploadeDocType !== null ? (uploadeDocType.length > 0 ? (uploadeDocType[0].documentType !== undefined && uploadeDocType[0].documentType !== null ? uploadeDocType[0].documentType :"NotFound") :"NotFound"):"NotFound"
+		checkuploadeDocType = uploadeDocType !== undefined && uploadeDocType !== null ? (uploadeDocType.length > 0 ? (uploadeDocType[0].documentType !== undefined && uploadeDocType[0].documentType !== null ? uploadeDocType[0].documentType : "NotFound") : "NotFound") : "NotFound"
 
-if(checkuploadeDocType !== "NotFound"){
-	valueForDocDropDown = `-${checkuploadeDocType}`
-}
+		if (checkuploadeDocType !== "NotFound") {
+			valueForDocDropDown = `-${checkuploadeDocType}`
+		}
 
-console.log("valueForDocDropDown",valueForDocDropDown)
+		console.log("valueForDocDropDown", valueForDocDropDown)
 
-// var ForAllNoDays = this.TotalPACCDays();     `-${uploadeDocType}`
+		// var ForAllNoDays = this.TotalPACCDays();     `-${uploadeDocType}`
 		// console.log("ForAllNoDays--",ForAllNoDays)    uploadeDocType[0].documentType    uploadeDocType.length > 0 ?
 
 		// var check = this.CheckGreaterDate();
@@ -1886,13 +1900,13 @@ console.log("valueForDocDropDown",valueForDocDropDown)
 		return (
 			<div>
 				<style>
-        {`
+					{`
     @media screen and (min-width: 320px) and (max-width: 568px) {
 .mob-mb10{margin-bottom:10px;}
 
 }
     `}
-    </style>
+				</style>
 
 				<Screen>
 					{complaint && !openMap && (
@@ -2105,18 +2119,38 @@ totalAmountPaid = {totalAmountPaid}
 									boxShadow: "0 0 2px 2px #e7dcdc", paddingLeft: "30px", paddingTop: "10px"
 								}}><b>Documents</b><br></br>
 
-                         {checkuploadeDocType !== "NotFound" ? <Label
-                           className="col-xs-12  col-sm-12 col-md-12  status-result-color"
-                                    id="complaint-details-current-status"
-                                    labelStyle={{ color: "inherit" }}
-                                    label={`BK_PCC_DOCUMENT - ${this.state && this.state.proofOfResDocName}`}
-                                /> :""}
+									{checkuploadeDocType !== "NotFound" ? <Label
+										className="col-xs-12  col-sm-12 col-md-12  status-result-color"
+										id="complaint-details-current-status"
+										labelStyle={{ color: "inherit" }}
+										label={`BK_PCC_DOCUMENT - ${this.state && this.state.proofOfResDocName}`}
+									/> : ""}
 
 									{/* {documentMap && Object.values(documentMap) ? Object.values(documentMap) : "Not found"} */}
 									{this.state && this.state.proofOfResDocumentType ? this.state.proofOfResDocumentType : "Not found"}
-									<button className="ViewDetailButton" data-doc={documentMap} onClick={(e) => { this.callApiForDocumentData(e) }}>VIEW</button>
+									<button className="ViewDetailButton" data-doc={documentMap} onClick={(e) => { this.callApiForDocumentData(e, "RESIDENCEPROOF") }}>VIEW</button>
 								</div>
+								{this.state.isDiscount ?
+									<div style={{
+										height: "130px",
+										width: "100",
+										marginTop: "20px",
+										backgroundColor: "white",
+										border: "2px solid white",
+										boxShadow: "0 0 2px 2px #e7dcdc", paddingLeft: "30px", paddingTop: "10px"
+									}}><b>Discount Documents</b><br></br>
 
+										<Label
+											className="col-xs-12  col-sm-12 col-md-12  status-result-color"
+											id="complaint-details-current-status"
+											labelStyle={{ color: "inherit" }}
+											label={`Dicount Document - ${this.state && this.state.discountDocName}`}
+										/>
+
+
+										<button className="ViewDetailButton" onClick={(e) => { this.callApiForDocumentData(e, "DISCOUNTPROOF") }}>VIEW</button>
+									</div>
+									: ""}
 								<Comments
 									comments={comments}
 									role={role}
@@ -2260,8 +2294,8 @@ totalAmountPaid = {totalAmountPaid}
 
 									)
 								)}
-{/*Book Room After Date/Venue Change*/}
-{(role === "employee" &&
+								{/*Book Room After Date/Venue Change*/}
+								{(role === "employee" &&
 									(complaint.status == "OFFLINE_MODIFIED" && foundSixthLavel &&
 										<Footer className="apply-wizard-footer" style={{ display: 'flex', justifyContent: 'flex-end' }} children={
 											<div className="col-sm-12 col-xs-12" style={{ textAlign: 'right' }}>
@@ -2527,7 +2561,7 @@ totalAmountPaid = {totalAmountPaid}
 								{console.log("match.params.applicationId--", match.params.applicationId)}
 
 
-                                   <DialogContainer
+								<DialogContainer
 									toggle={this.state.dateVenchangePop}  //open
 									actionTittle={"Date/Venue change Terms & Conditions"}   //data
 									togglepopup={this.testpopup}  //close
@@ -2710,7 +2744,7 @@ const mapStateToProps = (state, ownProps) => {
 		"NotFound"
 	);
 
-	console.log("DetailPageDocType",uploadeDocType)
+	console.log("DetailPageDocType", uploadeDocType)
 	const { HistoryData } = bookings;
 	let historyObject = HistoryData ? HistoryData : ''
 	const { paymentData } = bookings;
@@ -2778,7 +2812,7 @@ const mapStateToProps = (state, ownProps) => {
 					else if (OfflineInitatePayArray[i].taxHeadCode == "FACILITATION_CHRGS_MANUAL_OPEN_SPACE_BOOKING_BRANCH") {
 						FACILITATION_CHARGE = OfflineInitatePayArray[i].amount
 					}
-					else if(OfflineInitatePayArray[i].taxHeadCode == "PARK_LOCATION_AND_VENUE_CHANGE_AMOUNT"){
+					else if (OfflineInitatePayArray[i].taxHeadCode == "PARK_LOCATION_AND_VENUE_CHANGE_AMOUNT") {
 						DATEVENUECHARGE = OfflineInitatePayArray[i].amount
 					}
 				}
@@ -2824,7 +2858,7 @@ const mapStateToProps = (state, ownProps) => {
 
 	let amountTodisplay = 0;
 
-	if(ReceiptPaymentDetails !== undefined && ReceiptPaymentDetails !== null){
+	if (ReceiptPaymentDetails !== undefined && ReceiptPaymentDetails !== null) {
 		amountTodisplay = ReceiptPaymentDetails.Payments[0].totalAmountPaid
 	}
 
@@ -2879,7 +2913,7 @@ const mapStateToProps = (state, ownProps) => {
 				else if (billAccountDetailsArray[i].taxHeadCode == "FACILITATION_CHRGS_MANUAL_OPEN_SPACE_BOOKING_BRANCH") {//FACILITATION_CHARGE
 					FACILITATION_CHARGE = billAccountDetailsArray[i].amount
 				}
-				else if(billAccountDetailsArray[i].taxHeadCode == "PARK_LOCATION_AND_VENUE_CHANGE_AMOUNT"){
+				else if (billAccountDetailsArray[i].taxHeadCode == "PARK_LOCATION_AND_VENUE_CHANGE_AMOUNT") {
 					DATEVENUECHARGE = billAccountDetailsArray[i].amount
 				}
 			}
@@ -2988,7 +3022,7 @@ const mapStateToProps = (state, ownProps) => {
 
 		let details = {
 			applicantName: selectedComplaint.bkApplicantName,
-			roomsModel:selectedComplaint.roomsModel,
+			roomsModel: selectedComplaint.roomsModel,
 			status: selectedComplaint.bkApplicationStatus,
 			applicationNo: selectedComplaint.bkApplicationNumber,
 			address: selectedComplaint.bkCompleteAddress,
@@ -3062,15 +3096,15 @@ const mapStateToProps = (state, ownProps) => {
 			LUXURY_TAX,
 			REFUNDABLE_SECURITY,
 			PACC_TAX,
-			PACC_ROUND_OFF,DATEVENUECHARGE,
-			FACILITATION_CHARGE, one, two, three, four, five, newRoomAppNumber, dataForBothSelection, roomsData,amountTodisplay,
-			PaymentReceiptByESamp, EmpPaccPermissionLetter,uploadeDocType
+			PACC_ROUND_OFF, DATEVENUECHARGE,
+			FACILITATION_CHARGE, one, two, three, four, five, newRoomAppNumber, dataForBothSelection, roomsData, amountTodisplay,
+			PaymentReceiptByESamp, EmpPaccPermissionLetter, uploadeDocType
 
 		};
 	} else {
 		return {
-			dataForBothSelection, roomsData,DATEVENUECHARGE,uploadeDocType,
-			paymentDetails, offlineTransactionNum, recNumber, DownloadReceiptDetailsforPCC, refConAmount, RoomBookingDate,amountTodisplay,
+			dataForBothSelection, roomsData, DATEVENUECHARGE, uploadeDocType,
+			paymentDetails, offlineTransactionNum, recNumber, DownloadReceiptDetailsforPCC, refConAmount, RoomBookingDate, amountTodisplay,
 			offlinePayementMode, Difference_In_Days_check, first, showRoomCard,
 			offlineTransactionDate, RoomApplicationNumber, totalNumber, typeOfRoom, roomFromDate, roomToDate,
 			historyApiData,

@@ -96,8 +96,13 @@ else if(discountType == "20%"){
             console.log("finalDiscount--",finalDiscount)
             }
             console.log(discountDocs, "Neeraj this pros")
-let discountDocType = discountDocs && discountDocs[0].documentCode;
-let discountDocFid = discountDocs && discountDocs[0].documents[0].fileStoreId;
+            let discountDocType = '';
+            let discountDocFid = '';
+            if(discountType != "General"){
+                 discountDocType = discountDocs && discountDocs[0].documentCode;
+                 discountDocFid = discountDocs && discountDocs[0].documents[0].fileStoreId;
+            }
+
 
         let fid = documentMap ? Object.keys(documentMap) : ""
         let Booking = {
@@ -502,7 +507,7 @@ else {
             dimension, location, facilitationCharges, cleaningCharges, rent, approverName, comment, houseNo, type, purpose, residenials, documentMap,
             BK_FEE_HEAD_PACC,LUXURY_TAX,REFUNDABLE_SECURITY,PACC_TAX,totalAmountSuPage,one,two,three,four,five,six,
             PACPACC_ROUND_OFFC_TAX,FACILITATION_CHARGE,InitiateAppNumber,seven,
-            BankAccountName,NomineeName,BankAccountNumber,IFSCCode,AccountHolderName,accountType,
+            BankAccountName,NomineeName,BankAccountNumber,IFSCCode,AccountHolderName,accountType, discountType
             } = this.props;
 
             console.log(",one,two,three,four,five,six--",one,two,three,four,five,six)
@@ -571,7 +576,19 @@ totalAmountSuPage={totalAmountSuPage}
                             <SummaryDocumentDetail
                             uploadeDocType={this.props.uploadeDocType}
                                 documentMap={documentMap}
+                                docType="RESIDENCEPROOF"
+                                docData="NOTHING"
                             />
+                            {discountType && discountType != "General"?
+
+                            <SummaryDocumentDetail
+                            uploadeDocType={this.props.uploadeDocType}
+                                documentMap={documentMap}
+                                docType="DISCOUNTPROOF"
+                                docData={this.props && this.props.stateData.screenConfiguration.preparedFinalObject}
+                            />:""}
+
+
                             <div className="col-xs-12" style={{ marginLeft: '10px' }}>
                                 <div className="col-sm-12 col-xs-12" style={{ marginBottom: '90px' }}>
                                     <div className="complaint-detail-detail-section-status row">

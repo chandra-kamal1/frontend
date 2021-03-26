@@ -378,7 +378,7 @@ console.log('this.state.idProffType',this.state.idProffType);
                                 />
                             )}
                         </Grid>
-                        <Grid item={true} md={4}>
+                        {/* <Grid item={true} md={4}>
 
                     <FormControl style={{ width: '100%' }}>
                     <InputLabel shrink style={{ width: '100%' }} id="demo-controlled-open-select-proof">Proof Type</InputLabel>
@@ -398,7 +398,7 @@ console.log('this.state.idProffType',this.state.idProffType);
 
                     </Select>
                   </FormControl>
-                            </Grid>
+                            </Grid> */}
 
 
                         <Grid
